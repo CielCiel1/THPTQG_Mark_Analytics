@@ -62,8 +62,8 @@ def update_graph_mon(mon_chosen,year_chosen):
     data = df1[~df1[mon_chosen].isnull()]
     data_output= data[mon_chosen].value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
-    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon")
-    fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=0)
+    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
+    fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     return fig
 
 @callback(
@@ -77,7 +77,7 @@ def update_graph_khoi(khoi_chosen,year_chosen):
     data['Diem'] = data.sum(axis=1).round()
     data_output= data.Diem.value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
-    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo khoi")
+    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo khoi",text_auto=True)
     return fig
 # Run the app
 if __name__ == '__main__':
