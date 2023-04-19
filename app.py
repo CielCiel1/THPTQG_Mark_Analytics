@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 
 # Incorporate data
-df = pd.read_csv(r'D:\st\Dash\diem_2022.csv')
+df = pd.read_csv('diem_2022.csv')
 Khoi_dict = {"A":['Toan', 'Ly', 'Hoa'],
              'B':['Toan', 'Hoa','Sinh'],
              'C':['Lich su', 'Dia ly', 'GDCD'],
@@ -63,6 +63,7 @@ def update_graph_mon(mon_chosen,year_chosen):
     data_output= data[mon_chosen].value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
     fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon")
+    fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=0)
     return fig
 
 @callback(
@@ -80,6 +81,4 @@ def update_graph_khoi(khoi_chosen,year_chosen):
     return fig
 # Run the app
 if __name__ == '__main__':
-    app.run_server(debug=True)
-#18/04
-
+    app.run_server(debug=True) 
