@@ -1,4 +1,3 @@
-# Import packages
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
 import pandas as pd
 import plotly.express as px
@@ -75,6 +74,20 @@ def update_graph_mon(mon_chosen,year_chosen):
         data_output.columns = ['Diem', 'counts']
         fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
         fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
+
+    data_output= data[mon_chosen].value_counts().reset_index()
+    data_output.columns = ['Diem', 'counts']
+    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto= True)
+    fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
+    fig.update_traces(
+    textposition='inside',textfont=dict(
+        size=100),textangle = 90)
+    # annotations = []
+    # for country, population in zip(data_output["Diem"], data_output["counts"]):
+    #     annotations.append(dict(xref='Diem', yref='Diem', x=population+3, y=country,
+    #                             text='{:,}'.format(population), font=dict(size=12),
+    #                             showarrow=False))
+    # fig.update_layout(annotations=annotations)
     return fig
 
 @callback(
