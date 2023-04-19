@@ -2,6 +2,7 @@
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
 import pandas as pd
 import plotly.express as px
+import math
 
 # Incorporate data
 df = pd.read_csv('diem_2022.csv')
@@ -10,6 +11,7 @@ Khoi_dict = {"A":['Toan', 'Ly', 'Hoa'],
              'C':['Lich su', 'Dia ly', 'GDCD'],
              'D':['Toan', 'Van', 'Ngoai ngu'],
              'A1':['Toan','Ly','Ngoai ngu']}
+
 # print(df.head())
 # Initialize the app - incorporate css
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -60,10 +62,19 @@ app.layout = html.Div([
 def update_graph_mon(mon_chosen,year_chosen):
     df1 = df[df['Year']==year_chosen]
     data = df1[~df1[mon_chosen].isnull()]
-    data_output= data[mon_chosen].value_counts().reset_index()
-    data_output.columns = ['Diem', 'counts']
-    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
-    fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
+    if mon_chosen=='Van':
+        # data_output= data[mon_chosen]
+        # print(data_output)
+        data_output= (data[mon_chosen]*4).round()/4
+        data_output=data_output.value_counts().reset_index()
+        data_output.columns = ['Diem', 'counts']
+        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
+        fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
+    else:
+        data_output= data[mon_chosen].value_counts().reset_index()
+        data_output.columns = ['Diem', 'counts']
+        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
+        fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     return fig
 
 @callback(
