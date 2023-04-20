@@ -112,11 +112,11 @@ def update_graph_mon(mon_chosen,year_chosen):
         data_output= (data[mon_chosen]*4).round()/4
         data_output=data_output.value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
-        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
+        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True,template='none')
     else:
         data_output= data[mon_chosen].value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
-        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
+        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True,template='none')
     fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     fig.update_traces(
     textposition='inside',textfont=dict(
@@ -168,7 +168,7 @@ def update_graph_khoi(khoi_chosen,year_chosen):
     data['Diem'] = data.sum(axis=1).round()
     data_output = data.Diem.value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
-    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo khoi",text_auto=True)
+    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo khoi",text_auto=True,template='none')
     fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     fig.update_traces(
     textposition='inside',textfont=dict(
