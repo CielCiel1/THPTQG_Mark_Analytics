@@ -118,7 +118,7 @@ def update_graph_mon(mon_chosen,year_chosen):
     else:
         data_output= data[mon_chosen].value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
-        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
+        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True,template='none')
         fig.update_layout(width=1000, height=500)
     fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     fig.update_traces(
@@ -171,12 +171,12 @@ def update_graph_khoi(khoi_chosen,year_chosen):
     data['Diem'] = data.sum(axis=1).round()
     data_output = data.Diem.value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
-    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo khoi",text_auto=True)
+    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo khoi",text_auto=True,template='none')
     fig.update_layout(width=1000, height=500)
     fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     fig.update_traces(
     textposition='inside',textfont=dict(
-        size=20),textangle = 90)
+        size=10),textangle = 90)
     # print(data_output)
     return fig
 
