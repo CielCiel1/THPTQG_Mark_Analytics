@@ -42,11 +42,14 @@ app.layout = html.Div([
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh','Lich su', 'Dia ly', 'GDCD'],value='Toan',  id='controls-mon'),
-            dcc.Graph(figure={}, id='mon-graph')
+            dcc.Graph(figure={}, id='mon-graph'),
+            dash_table.DataTable(page_size=10, id='tabel_mon')
+            
         ]),
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['A','B','C','D','A1'],value='A',  id='controls-khoi'),
-            dcc.Graph(figure={}, id='khoi-graph')
+            dcc.Graph(figure={}, id='khoi-graph'),
+            dash_table.DataTable(page_size=10, id='tabel_khoi')
         ])
     ])
 ])
@@ -62,6 +65,8 @@ def update_graph_mon(mon_chosen,year_chosen):
     df1 = df[df['Year']==year_chosen]
     data = df1[~df1[mon_chosen].isnull()]
     if mon_chosen=='Van':
+        # data_output= data[mon_chosen]
+        # print(data_output)
         data_output= (data[mon_chosen]*4).round()/4
         data_output=data_output.value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
@@ -70,6 +75,7 @@ def update_graph_mon(mon_chosen,year_chosen):
         data_output= data[mon_chosen].value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
         fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
+        fig.update_layout(width=1000, height=500)
     fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     fig.update_traces(
     textposition='inside',textfont=dict(
@@ -81,7 +87,34 @@ def update_graph_mon(mon_chosen,year_chosen):
     #                             showarrow=False))
     # fig.update_layout(annotations=annotations)
     return fig
-# def table_mon()
+
+@callback(
+    Output(component_id='tabel_mon', component_property='data'),
+    Input(component_id='controls-mon', component_property='value'),
+    Input(component_id='controls-year', component_property='value')
+)
+def table_mon(mon_chosen,year_chosen):
+    df1 = df[df['Year']==year_chosen]
+    data = df1[~df1[mon_chosen].isnull()]
+    output = pd.DataFrame({"Thống kê":['Tổng số thí sinh',
+                                       'Điểm trung bình',
+                                       'Số thí sinh đạt điểm <=1',
+                                       'Số thí sinh đạt điểm dưới trung bình(<5)',
+                                       'Số sinh viên đạt điểm >9',
+                                       'Số điểm nhiều thí sinh đạt nhất'],
+                            "Số lượng":[data.shape[0],
+                                        data[mon_chosen].mean().round(2),
+                                        data[data[mon_chosen]<=1].shape[0],
+                                        data[data[mon_chosen]<5].shape[0],
+                                        data[data[mon_chosen]>9].shape[0],
+                                        data[mon_chosen].value_counts().sort_values(ascending=False).index[0]],
+                            "Tỉ lệ":['',
+                                     '',
+                                        f'{round(((data[data[mon_chosen]<=1].shape[0]/data.shape[0])*100),2)}%',
+                                        f'{round(((data[data[mon_chosen]<5].shape[0]/data.shape[0])*100),2)}%',
+                                        f'{round(((data[data[mon_chosen]>9].shape[0]/data.shape[0])*100),2)}%',
+                                     '']})
+    return output.to_dict('records')
 
 @callback(
     Output(component_id='khoi-graph', component_property='figure'),
@@ -94,14 +127,43 @@ def update_graph_khoi(khoi_chosen,year_chosen):
     data['Diem'] = data.sum(axis=1).round()
     data_output = data.Diem.value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
-    print(data_output.head())
     fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo khoi",text_auto=True)
+    fig.update_layout(width=1000, height=500)
     fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     fig.update_traces(
     textposition='inside',textfont=dict(
-        size=100),textangle = 90)
+        size=20),textangle = 90)
     # print(data_output)
     return fig
+
+@callback(
+    Output(component_id='tabel_khoi', component_property='data'),
+    Input(component_id='controls-khoi', component_property='value'),
+    Input(component_id='controls-year', component_property='value')
+)
+def table_khoi(khoi_chosen,year_chosen):
+    df1 = df[df['Year']==year_chosen]
+    data = df1[~df1[Khoi_dict[khoi_chosen]].isnull().any(axis=1)][Khoi_dict[khoi_chosen]]
+    data['Diem'] = data.sum(axis=1).round()
+    # print(data['Diem'])
+    output = pd.DataFrame({"Thống kê":['Tổng số thí sinh',
+                                       'Điểm trung bình',
+                                       'Số thí sinh đạt điểm <=10',
+                                       'Số sinh viên đạt điểm >=27',
+                                       'Số điểm nhiều thí sinh đạt nhất'],
+                            "Số lượng":[data.Diem.shape[0],
+                                        data.Diem.mean().round(2),
+                                        data.Diem[data.Diem <=10].shape[0],
+                                        data.Diem[data.Diem >=27].shape[0],
+                                        data.Diem.value_counts().sort_values(ascending=False).index[0]],
+                             "Tỉ lệ":['',
+                                     '',
+                                        f'{round(((data.Diem[data.Diem <=10].shape[0]/data.Diem.shape[0])*100),2)}%',
+                                        f'{round(((data.Diem[data.Diem >=27].shape[0]/data.Diem.shape[0])*100),2)}%',
+                                        '']
+                            })
+    return output.to_dict('records')
+
 # Run the app
 if __name__ == '__main__':
     app.run_server(debug=True)
