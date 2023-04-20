@@ -107,9 +107,9 @@ def table_mon(mon_chosen,year_chosen):
                                         data[mon_chosen].value_counts().sort_values(ascending=False).index[0]],
                             "Tỉ lệ":['',
                                      '',
-                                        f'{(data[data[mon_chosen]<=1].shape[0]/data.shape[0])*100}%',
-                                        f'{(data[data[mon_chosen]<5].shape[0]/data.shape[0])*100}%',
-                                        f'{(data[data[mon_chosen]>9].shape[0]/data.shape[0])*100}%',
+                                        f'{round(((data[data[mon_chosen]<=1].shape[0]/data.shape[0])*100),2)}%',
+                                        f'{round(((data[data[mon_chosen]<5].shape[0]/data.shape[0])*100),2)}%',
+                                        f'{round(((data[data[mon_chosen]>9].shape[0]/data.shape[0])*100),2)}%',
                                      '']})
     return output.to_dict('records')
 
@@ -131,6 +131,7 @@ def update_graph_khoi(khoi_chosen,year_chosen):
         size=100),textangle = 90)
     # print(data_output)
     return fig
+
 # Run the app
 if __name__ == '__main__':
     app.run_server(debug=True)
