@@ -129,7 +129,7 @@ def update_graph_monthi(year_chosen):
     output= df1.isnull().sum().reset_index()
     output.columns=['Môn','counts']
     output['counts']=df1.shape[0]-output['counts']
-    fig=px.bar(output,x='counts',y='Môn',title='Số thí sinh thi các môn', orientation='h')
+    fig=px.bar(output,x='counts',y='Môn',title='Số thí sinh thi các môn', orientation='h',template='none')
     return fig
 
 @callback(
@@ -142,7 +142,7 @@ def update_graph_monthi(year_chosen):
     output= 9-df1.isnull().sum(axis=1)
     output = output.value_counts().reset_index()
     output.columns=['Số môn thi','counts']
-    fig=px.pie(output,values='counts',names='Số môn thi',title='Tỉ lệ thi số môn')
+    fig=px.pie(output,values='counts',names='Số môn thi',title='Tỉ lệ thi số môn',template='none')
     return fig
 
 @callback(
