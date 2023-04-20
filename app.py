@@ -65,8 +65,8 @@ app.layout = html.Div([
         ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
 
         html.Div(children=[
-            html.H3(id='Tổng số sinh viên thi ít hơn 2 môn', style={'fontWeight': 'bold', 'color': '#660033','text-align':'center'}),
-            html.Label('Tổng số sinh viên thi ít hơn 2 môn', style={'paddingTop': '.3rem','text-align':'center'}),
+            html.H3(id='Tổng số sinh viên thi ít hơn 3 môn', style={'fontWeight': 'bold', 'color': '#660033','text-align':'center'}),
+            html.Label('Tổng số sinh viên thi ít hơn 3 môn', style={'paddingTop': '.3rem','text-align':'center'}),
         
         ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
 
@@ -97,7 +97,7 @@ app.layout = html.Div([
      Output('Tổng số sinh viên thi KHTN', 'children'),
      Output('Tổng số sinh viên thi KHXH', 'children'),
      Output('Tổng số sinh viên thi KHTN+KHXH', 'children'),
-     Output('Tổng số sinh viên thi ít hơn 2 môn', 'children'),
+     Output('Tổng số sinh viên thi ít hơn 3 môn', 'children'),
     ],
     Input(component_id='controls-year', component_property='value')
 )
