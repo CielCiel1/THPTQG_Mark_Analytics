@@ -44,25 +44,32 @@ app.layout = html.Div([
 
     html.Div(className='row', children=[
         html.Div(children=[
-            html.H3(id='Tổng số sinh viên thi', style={'fontWeight': 'bold'}),
-            html.Label('Tổng số sinh viên thi', style={'paddingTop': '.3rem'}),
-        ], className="three columns number-stat-box",style={'background-color':'#CCFFE5'}),
+            html.H3(id='Tổng số sinh viên thi', style={'fontWeight': 'bold','text-align':'center'}),
+            html.Label('Tổng số sinh viên thi', style={'paddingTop': '.3rem','text-align':'center'}),
+        ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
     
         html.Div(children=[
-            html.H3(id='Tổng số sinh viên thi KHTN', style={'fontWeight': 'bold', 'color': '#f73600'}),
-            html.Label('Tổng số sinh viên thi KHTN', style={'paddingTop': '.3rem'}),
-        ], className="three columns number-stat-box",style={'background-color':'#CCFFE5'}),
+            html.H3(id='Tổng số sinh viên thi KHTN', style={'fontWeight': 'bold', 'color': '#f73600','text-align':'center'}),
+            html.Label('Tổng số sinh viên thi KHTN', style={'paddingTop': '.3rem','text-align':'center'}),
+        ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
 
         html.Div(children=[
-            html.H3(id='Tổng số sinh viên thi KHXH', style={'fontWeight': 'bold', 'color': '#00aeef'}),
-            html.Label('Tổng số sinh viên thi KHXH', style={'paddingTop': '.3rem'}),
-        ], className="three columns number-stat-box",style={'background-color':'#CCFFE5'}),
+            html.H3(id='Tổng số sinh viên thi KHXH', style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
+            html.Label('Tổng số sinh viên thi KHXH', style={'paddingTop': '.3rem','text-align':'center'}),
+        ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
 
         html.Div(children=[
-            html.H3(id='Tổng số sinh viên thi KHTN+KHXH', style={'fontWeight': 'bold', 'color': '#00FF00'}),
-            html.Label('Tổng số sinh viên thi KHTN+KHXH', style={'paddingTop': '.3rem'}),
+            html.H3(id='Tổng số sinh viên thi KHTN+KHXH', style={'fontWeight': 'bold', 'color': '#006600','text-align':'center'}),
+            html.Label('Tổng số sinh viên thi KHTN + KHXH', style={'paddingTop': '.3rem','text-align':'center'}),
         
-        ], className="three columns number-stat-box",style={'background-color':'#CCFFE5'}),
+        ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
+
+        html.Div(children=[
+            html.H3(id='Tổng số sinh viên thi ít hơn 2 môn', style={'fontWeight': 'bold', 'color': '#660033','text-align':'center'}),
+            html.Label('Tổng số sinh viên thi ít hơn 2 môn', style={'paddingTop': '.3rem','text-align':'center'}),
+        
+        ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
+
     ], style={'margin':'1rem', 'display': 'flex', 'justify-content': 'space-between', 'width': '100%', 'flex-wrap': 'wrap'}),
 
     # ]),
@@ -90,6 +97,7 @@ app.layout = html.Div([
      Output('Tổng số sinh viên thi KHTN', 'children'),
      Output('Tổng số sinh viên thi KHXH', 'children'),
      Output('Tổng số sinh viên thi KHTN+KHXH', 'children'),
+     Output('Tổng số sinh viên thi ít hơn 2 môn', 'children'),
     ],
     Input(component_id='controls-year', component_property='value')
 )
@@ -99,7 +107,9 @@ def text_value(year_chosen):
     KHTN = df1[~df1[To_hop_dict['KHTN']].isnull().any(axis=1)].shape[0]
     KHXH = df1[~df1[To_hop_dict['KHXH']].isnull().any(axis=1)].shape[0]
     both = df1[~df1[To_hop_dict['both']].isnull().any(axis=1)].shape[0]
-    return total, KHTN, KHXH, both
+    null_fill = df1.isnull().sum(axis=1)
+    less2 = null_fill[null_fill>6].shape[0]
+    return total, KHTN, KHXH, both,less2
 @callback(
     Output(component_id='mon-graph', component_property='figure'),
     Input(component_id='controls-mon', component_property='value'),
