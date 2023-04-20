@@ -7,9 +7,12 @@ import math
 df = pd.read_csv('diem_2022.csv')
 Khoi_dict = {"A":['Toan', 'Ly', 'Hoa'],
              'B':['Toan', 'Hoa','Sinh'],
-             'C':['Lich su', 'Dia ly', 'GDCD'],
+             'C':['Lich su', 'Dia ly', 'Van'],
              'D':['Toan', 'Van', 'Ngoai ngu'],
              'A1':['Toan','Ly','Ngoai ngu']}
+To_hop_dict = {'KHTN':['Sinh', 'Ly', 'Hoa'],
+               'KHXH':['Lich su', 'Dia ly', 'GDCD'],
+               'both':['Sinh', 'Ly', 'Hoa','Lich su', 'Dia ly', 'GDCD']}
 
 # print(df.head())
 # Initialize the app - incorporate css
@@ -40,6 +43,32 @@ app.layout = html.Div([
     ]),
 
     html.Div(className='row', children=[
+        html.Div(children=[
+            html.H3(id='Tổng số sinh viên thi', style={'fontWeight': 'bold'}),
+            html.Label('Tổng số sinh viên thi', style={'paddingTop': '.3rem'}),
+        ], className="three columns number-stat-box",style={'background-color':'#CCFFE5'}),
+    
+        html.Div(children=[
+            html.H3(id='Tổng số sinh viên thi KHTN', style={'fontWeight': 'bold', 'color': '#f73600'}),
+            html.Label('Tổng số sinh viên thi KHTN', style={'paddingTop': '.3rem'}),
+        ], className="three columns number-stat-box",style={'background-color':'#CCFFE5'}),
+
+        html.Div(children=[
+            html.H3(id='Tổng số sinh viên thi KHXH', style={'fontWeight': 'bold', 'color': '#00aeef'}),
+            html.Label('Tổng số sinh viên thi KHXH', style={'paddingTop': '.3rem'}),
+        ], className="three columns number-stat-box",style={'background-color':'#CCFFE5'}),
+
+        html.Div(children=[
+            html.H3(id='Tổng số sinh viên thi KHTN+KHXH', style={'fontWeight': 'bold', 'color': '#00FF00'}),
+            html.Label('Tổng số sinh viên thi KHTN+KHXH', style={'paddingTop': '.3rem'}),
+        
+        ], className="three columns number-stat-box",style={'background-color':'#CCFFE5'}),
+    ], style={'margin':'1rem', 'display': 'flex', 'justify-content': 'space-between', 'width': '100%', 'flex-wrap': 'wrap'}),
+
+    # ]),
+
+
+    html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh','Lich su', 'Dia ly', 'GDCD'],value='Toan',  id='controls-mon'),
             dcc.Graph(figure={}, id='mon-graph'),
@@ -54,6 +83,21 @@ app.layout = html.Div([
 
 
 # Add controls to build the interaction
+@callback(
+    [Output(component_id='Tổng số sinh viên thi', component_property='children'),
+     Output('Tổng số sinh viên thi KHTN', 'children'),
+     Output('Tổng số sinh viên thi KHXH', 'children'),
+     Output('Tổng số sinh viên thi KHTN+KHXH', 'children'),
+    ],
+    Input(component_id='controls-year', component_property='value')
+)
+def text_value(year_chosen):
+    df1 = df[df['Year']==year_chosen]
+    total = df1.shape[0]
+    KHTN = df1[~df1[To_hop_dict['KHTN']].isnull().any(axis=1)].shape[0]
+    KHXH = df1[~df1[To_hop_dict['KHXH']].isnull().any(axis=1)].shape[0]
+    both = df1[~df1[To_hop_dict['both']].isnull().any(axis=1)].shape[0]
+    return total, KHTN, KHXH, both
 @callback(
     Output(component_id='mon-graph', component_property='figure'),
     Input(component_id='controls-mon', component_property='value'),
