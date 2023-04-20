@@ -204,16 +204,19 @@ def table_khoi(khoi_chosen,year_chosen):
                                        'Điểm trung bình',
                                        'Số thí sinh đạt điểm <=10',
                                        'Số sinh viên đạt điểm >=27',
+                                       'Số sinh viên đạt điểm từ 16-30 điểm',
                                        'Số điểm nhiều thí sinh đạt nhất'],
                             "Số lượng":[data.Diem.shape[0],
                                         data.Diem.mean().round(2),
                                         data.Diem[data.Diem <=10].shape[0],
                                         data.Diem[data.Diem >=27].shape[0],
+                                        data.Diem[data.Diem >=16].shape[0],
                                         data.Diem.value_counts().sort_values(ascending=False).index[0]],
                              "Tỉ lệ":['',
                                      '',
                                         f'{round(((data.Diem[data.Diem <=10].shape[0]/data.Diem.shape[0])*100),2)}%',
                                         f'{round(((data.Diem[data.Diem >=27].shape[0]/data.Diem.shape[0])*100),2)}%',
+                                        f'{round(((data.Diem[data.Diem >=16].shape[0]/data.Diem.shape[0])*100),2)}%',
                                         '']
                             })
     return output.to_dict('records')
@@ -221,4 +224,3 @@ def table_khoi(khoi_chosen,year_chosen):
 # Run the app
 if __name__ == '__main__':
     app.run_server(debug=True)
-    
