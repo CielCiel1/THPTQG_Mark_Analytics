@@ -62,22 +62,14 @@ def update_graph_mon(mon_chosen,year_chosen):
     df1 = df[df['Year']==year_chosen]
     data = df1[~df1[mon_chosen].isnull()]
     if mon_chosen=='Van':
-        # data_output= data[mon_chosen]
-        # print(data_output)
         data_output= (data[mon_chosen]*4).round()/4
         data_output=data_output.value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
         fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
-        fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     else:
         data_output= data[mon_chosen].value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
         fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True)
-        fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
-
-    data_output= data[mon_chosen].value_counts().reset_index()
-    data_output.columns = ['Diem', 'counts']
-    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto= True)
     fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     fig.update_traces(
     textposition='inside',textfont=dict(
@@ -98,11 +90,18 @@ def update_graph_mon(mon_chosen,year_chosen):
 def update_graph_khoi(khoi_chosen,year_chosen):
     df1 = df[df['Year']==year_chosen]
     data = df1[~df1[Khoi_dict[khoi_chosen]].isnull().any(axis=1)][Khoi_dict[khoi_chosen]]
-    data['Diem'] = data.sum(axis=1).round()
-    data_output= data.Diem.value_counts().reset_index()
+    data['Diem'] = data.sum(axis=1).apply(lambda x: round(x*2)/2)
+    data_output = data.Diem.value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
+    print(data_output.head())
     fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo khoi",text_auto=True)
+    fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
+    fig.update_traces(
+    textposition='inside',textfont=dict(
+        size=100),textangle = 90)
+    # print(data_output)
     return fig
 # Run the app
 if __name__ == '__main__':
     app.run_server(debug=True)
+    
