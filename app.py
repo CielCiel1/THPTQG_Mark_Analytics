@@ -73,7 +73,15 @@ app.layout = html.Div([
     ], style={'margin':'1rem', 'display': 'flex', 'justify-content': 'space-between', 'width': '100%', 'flex-wrap': 'wrap'}),
 
     # ]),
-
+    html.Div(className='row', children=[
+        html.Div(className='six columns', children=[
+            dcc.Graph(figure={}, id='mon_thi-graph')
+            
+        ]),
+        html.Div(className='six columns', children=[
+            dcc.Graph(figure={}, id='mon_khong_thi-graph')
+        ])
+    ]),
 
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
@@ -110,6 +118,33 @@ def text_value(year_chosen):
     null_fill = df1.isnull().sum(axis=1)
     less2 = null_fill[null_fill>6].shape[0]
     return total, KHTN, KHXH, both,less2
+
+@callback(
+    Output(component_id='mon_khong_thi-graph', component_property='figure'),
+    Input(component_id='controls-year', component_property='value')
+)
+def update_graph_monthi(year_chosen):
+    df1 = df[df['Year']==year_chosen]
+    df1 = df1[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD']]
+    output= df1.isnull().sum().reset_index()
+    output.columns=['Môn','counts']
+    output['counts']=df1.shape[0]-output['counts']
+    fig=px.bar(output,x='counts',y='Môn',title='Số thí sinh thi các môn', orientation='h')
+    return fig
+
+@callback(
+    Output(component_id='mon_thi-graph', component_property='figure'),
+    Input(component_id='controls-year', component_property='value')
+)
+def update_graph_monthi(year_chosen):
+    df1 = df[df['Year']==year_chosen]
+    df1 = df1[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD']]
+    output= 9-df1.isnull().sum(axis=1)
+    output = output.value_counts().reset_index()
+    output.columns=['Số môn thi','counts']
+    fig=px.pie(output,values='counts',names='Số môn thi',title='Tỉ lệ thi số môn')
+    return fig
+
 @callback(
     Output(component_id='mon-graph', component_property='figure'),
     Input(component_id='controls-mon', component_property='value'),
