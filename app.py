@@ -81,6 +81,7 @@ def update_graph_mon(mon_chosen,year_chosen):
     #                             showarrow=False))
     # fig.update_layout(annotations=annotations)
     return fig
+# def table_mon()
 
 @callback(
     Output(component_id='khoi-graph', component_property='figure'),
@@ -90,7 +91,7 @@ def update_graph_mon(mon_chosen,year_chosen):
 def update_graph_khoi(khoi_chosen,year_chosen):
     df1 = df[df['Year']==year_chosen]
     data = df1[~df1[Khoi_dict[khoi_chosen]].isnull().any(axis=1)][Khoi_dict[khoi_chosen]]
-    data['Diem'] = data.sum(axis=1).apply(lambda x: round(x*2)/2)
+    data['Diem'] = data.sum(axis=1).round()
     data_output = data.Diem.value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
     print(data_output.head())
