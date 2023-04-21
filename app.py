@@ -1,5 +1,6 @@
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import math
 
@@ -74,11 +75,17 @@ app.layout = html.Div([
 
     # ]),
     html.Div(className='row', children=[
-        html.Div(className='six columns', children=[
+        html.Div(className='two columns', children=[
+            dash_table.DataTable(page_size=10, id='tabel_tinh',
+                                #  style_cell={'padding': '5px'},
+                                #  style_data={ 'border': '1px solid blue' }
+                                 )
+        ]),
+        html.Div(className='five columns', children=[
             dcc.Graph(figure={}, id='mon_thi-graph')
             
         ]),
-        html.Div(className='six columns', children=[
+        html.Div(className='five columns', children=[
             dcc.Graph(figure={}, id='mon_khong_thi-graph')
         ])
     ]),
@@ -120,7 +127,18 @@ def text_value(year_chosen):
     return total, KHTN, KHXH, both,less2
 
 @callback(
-    Output(component_id='mon_khong_thi-graph', component_property='figure'),
+    Output(component_id='tabel_tinh', component_property='data'),
+    Input(component_id='controls-mon', component_property='value'),
+    Input(component_id='controls-year', component_property='value')
+)
+def table_tinh(mon_chosen,year_chosen):
+    df1 = df[df['Year']==year_chosen]
+    output= df1.MaTinh.value_counts().sort_values(ascending=False).head(10).reset_index()
+    output.columns=['Tỉnh','Số thí sinh tham gia thi']
+    return output.to_dict('records')
+
+@callback(
+    Output(component_id='mon_thi-graph', component_property='figure'),
     Input(component_id='controls-year', component_property='value')
 )
 def update_graph_monthi(year_chosen):
@@ -130,10 +148,12 @@ def update_graph_monthi(year_chosen):
     output.columns=['Môn','counts']
     output['counts']=df1.shape[0]-output['counts']
     fig=px.bar(output,x='counts',y='Môn',title='Số thí sinh thi các môn', orientation='h',template='none')
+    fig.update_layout(
+    yaxis=dict(categoryorder='total ascending'))
     return fig
 
 @callback(
-    Output(component_id='mon_thi-graph', component_property='figure'),
+    Output(component_id='mon_khong_thi-graph', component_property='figure'),
     Input(component_id='controls-year', component_property='value')
 )
 def update_graph_monthi(year_chosen):
@@ -143,6 +163,12 @@ def update_graph_monthi(year_chosen):
     output = output.value_counts().reset_index()
     output.columns=['Số môn thi','counts']
     fig=px.pie(output,values='counts',names='Số môn thi',title='Tỉ lệ thi số môn',template='none')
+    fig.update_layout(
+    legend_title='Tổng số môn thi',
+    legend=dict(
+        traceorder='normal',
+        font=dict(size=12),
+        borderwidth=1 ))
     return fig
 
 @callback(
