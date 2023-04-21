@@ -77,6 +77,7 @@ app.layout = html.Div([
     # ]),
     html.Div(className='row', children=[
         html.Div(className='two columns', children=[
+            html.Hr(),
             dash_table.DataTable(page_size=10, id='tabel_tinh',
                                 #  style_cell={'padding': '5px'},
                                 #  style_data={ 'border': '1px solid blue' }
