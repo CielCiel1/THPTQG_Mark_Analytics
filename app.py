@@ -6,7 +6,8 @@ import plotly.graph_objects as go
 import math
 
 # Incorporate data
-df = pd.read_csv('data_full.csv')
+df = pd.read_csv('diem.csv')
+tinh = pd.read_csv('Tỉnh_define_code.csv')
 Khoi_dict = {"A":['Toan', 'Ly', 'Hoa'],
              'B':['Toan', 'Hoa','Sinh'],
              'C':['Lich su', 'Dia ly', 'Van'],
@@ -15,6 +16,8 @@ Khoi_dict = {"A":['Toan', 'Ly', 'Hoa'],
 To_hop_dict = {'KHTN':['Sinh', 'Ly', 'Hoa'],
                'KHXH':['Lich su', 'Dia ly', 'GDCD'],
                'both':['Sinh', 'Ly', 'Hoa','Lich su', 'Dia ly', 'GDCD']}
+tinh_dict = tinh.set_index('Tên').to_dict()['Mã']
+
 dt = df[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD','Year']].groupby('Year').agg('mean').round(2).reset_index()
 dt["Year"] = dt['Year'].astype(str)
 dt = dt.T.reset_index()
@@ -44,8 +47,9 @@ app = Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div([
     html.Div(className='row', children='Phân tích điểm thi THPT Quốc gia',
              style={'textAlign': 'center', 'color': 'blue', 'fontSize': 30}),
-
+    
     html.Div(className='row', children=[
+        dcc.Dropdown(options=[i for i in tinh_dict.keys()],value='Toàn Quốc',  id='controls-tinh'),
         dcc.Dropdown(options=[i for i in range(2017,2023)],value=2022,  id='controls-year')
     ]),
 
@@ -132,10 +136,15 @@ app.layout = html.Div([
      Output('Tổng số sinh viên thi KHTN+KHXH', 'children'),
      Output('Tổng số sinh viên thi ít hơn 3 môn', 'children'),
     ],
-    Input(component_id='controls-year', component_property='value')
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
 )
-def text_value(year_chosen):
-    df1 = df[df['Year']==year_chosen]
+def text_value(year_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df.copy()
+    df1 = df_tinh[df_tinh['Year']==year_chosen]
     total = df1.shape[0]
     KHTN = df1[~df1[To_hop_dict['KHTN']].isnull().any(axis=1)].shape[0]
     KHXH = df1[~df1[To_hop_dict['KHXH']].isnull().any(axis=1)].shape[0]
@@ -157,10 +166,15 @@ def text_value(year_chosen):
 
 @callback(
     Output(component_id='mon_thi-graph', component_property='figure'),
-    Input(component_id='controls-year', component_property='value')
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
 )
-def update_graph_monthi(year_chosen):
-    df1 = df[df['Year']==year_chosen]
+def update_graph_monthi(year_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df.copy()
+    df1 = df_tinh[df_tinh['Year']==year_chosen]
     df1 = df1[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD']]
     output= df1.isnull().sum().reset_index()
     output.columns=['Môn','counts']
@@ -175,10 +189,15 @@ def update_graph_monthi(year_chosen):
 
 @callback(
     Output(component_id='mon_khong_thi-graph', component_property='figure'),
-    Input(component_id='controls-year', component_property='value')
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
 )
-def update_graph_monthi(year_chosen):
-    df1 = df[df['Year']==year_chosen]
+def update_graph_monthi(year_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df.copy()
+    df1 = df_tinh[df_tinh['Year']==year_chosen]
     df1 = df1[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD']]
     output= 9-df1.isnull().sum(axis=1)
     output = output.value_counts().reset_index()
@@ -196,10 +215,15 @@ def update_graph_monthi(year_chosen):
 @callback(
     Output(component_id='mon-graph', component_property='figure'),
     Input(component_id='controls-mon', component_property='value'),
-    Input(component_id='controls-year', component_property='value')
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
 )
-def update_graph_mon(mon_chosen,year_chosen):
-    df1 = df[df['Year']==year_chosen]
+def update_graph_mon(mon_chosen,year_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df.copy()
+    df1 = df_tinh[df_tinh['Year']==year_chosen]
     data = df1[~df1[mon_chosen].isnull()]
     if mon_chosen=='Van':
         # data_output= data[mon_chosen]
@@ -229,10 +253,15 @@ def update_graph_mon(mon_chosen,year_chosen):
 @callback(
     Output(component_id='tabel_mon', component_property='data'),
     Input(component_id='controls-mon', component_property='value'),
-    Input(component_id='controls-year', component_property='value')
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
 )
-def table_mon(mon_chosen,year_chosen):
-    df1 = df[df['Year']==year_chosen]
+def table_mon(mon_chosen,year_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df.copy()
+    df1 = df_tinh[df_tinh['Year']==year_chosen]
     data = df1[~df1[mon_chosen].isnull()]
     output = pd.DataFrame({"Thống kê":['Tổng số thí sinh',
                                        'Điểm trung bình',
@@ -257,10 +286,15 @@ def table_mon(mon_chosen,year_chosen):
 @callback(
     Output(component_id='khoi-graph', component_property='figure'),
     Input(component_id='controls-khoi', component_property='value'),
-    Input(component_id='controls-year', component_property='value')
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
 )
-def update_graph_khoi(khoi_chosen,year_chosen):
-    df1 = df[df['Year']==year_chosen]
+def update_graph_khoi(khoi_chosen,year_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df.copy()
+    df1 = df_tinh[df_tinh['Year']==year_chosen]
     data = df1[~df1[Khoi_dict[khoi_chosen]].isnull().any(axis=1)][Khoi_dict[khoi_chosen]]
     data['Diem'] = data.sum(axis=1).round()
     data_output = data.Diem.value_counts().reset_index()
@@ -278,10 +312,15 @@ def update_graph_khoi(khoi_chosen,year_chosen):
 @callback(
     Output(component_id='tabel_khoi', component_property='data'),
     Input(component_id='controls-khoi', component_property='value'),
-    Input(component_id='controls-year', component_property='value')
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
 )
-def table_khoi(khoi_chosen,year_chosen):
-    df1 = df[df['Year']==year_chosen]
+def table_khoi(khoi_chosen,year_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df.copy()
+    df1 = df_tinh[df_tinh['Year']==year_chosen]
     data = df1[~df1[Khoi_dict[khoi_chosen]].isnull().any(axis=1)][Khoi_dict[khoi_chosen]]
     data['Diem'] = data.sum(axis=1).round()
     # print(data['Diem'])
@@ -308,11 +347,15 @@ def table_khoi(khoi_chosen,year_chosen):
 
 @callback(
     Output(component_id='mon_line-graph', component_property='figure'),
-    Input(component_id='controls-mon', component_property='value')
+    Input(component_id='controls-mon', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
 )
-def line_mon(mon_chosen):
-    # df1 = df[df['Year']>=2020]
-    df1 = df[~df[mon_chosen].isnull()]
+def line_mon(mon_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df.copy()
+    df1 = df_tinh[~df_tinh[mon_chosen].isnull()]
     if mon_chosen=='Van':
         list_output=[]
         for i in range(2020,2023):
@@ -375,9 +418,14 @@ def line_mon(mon_chosen):
 
 @callback(
     Output(component_id='khoi_line-graph', component_property='figure'),
-    Input(component_id='controls-khoi', component_property='value')
+    Input(component_id='controls-khoi', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
 )
-def line_khoi(khoi_chosen):
+def line_khoi(khoi_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df1=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df1=df.copy()
     list_output=[]
     for i in range(2020,2023):
         df1 = df[df['Year']==i]
