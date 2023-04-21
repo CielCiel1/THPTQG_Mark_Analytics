@@ -1,6 +1,8 @@
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
 import pandas as pd
+import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 import math
 
 # Incorporate data
@@ -35,7 +37,7 @@ app = Dash(__name__, external_stylesheets=external_stylesheets)
 # ])
 
 app.layout = html.Div([
-    html.Div(className='row', children='Biggest title',
+    html.Div(className='row', children='Phân tích điểm thi THPT Quốc gia',
              style={'textAlign': 'center', 'color': 'blue', 'fontSize': 30}),
 
     html.Div(className='row', children=[
@@ -74,11 +76,18 @@ app.layout = html.Div([
 
     # ]),
     html.Div(className='row', children=[
-        html.Div(className='six columns', children=[
+        html.Div(className='two columns', children=[
+            html.Hr(),
+            dash_table.DataTable(page_size=10, id='tabel_tonghop',
+                                #  style_cell={'padding': '5px'},
+                                #  style_data={ 'border': '1px solid blue' }
+                                 )
+        ]),
+        html.Div(className='five columns', children=[
             dcc.Graph(figure={}, id='mon_thi-graph')
             
         ]),
-        html.Div(className='six columns', children=[
+        html.Div(className='four columns', children=[
             dcc.Graph(figure={}, id='mon_khong_thi-graph')
         ])
     ]),
@@ -87,14 +96,22 @@ app.layout = html.Div([
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh','Lich su', 'Dia ly', 'GDCD'],value='Toan',  id='controls-mon'),
             dcc.Graph(figure={}, id='mon-graph'),
-            dash_table.DataTable(page_size=10, id='tabel_mon'),
-            dcc.Graph(figure={},id='mon-line')
+            dash_table.DataTable(page_size=10, id='tabel_mon')
+            
         ]),
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['A','B','C','D','A1'],value='A',  id='controls-khoi'),
             dcc.Graph(figure={}, id='khoi-graph'),
-            dash_table.DataTable(page_size=10, id='tabel_khoi'),
-            dcc.Graph(figure={},id='khoi-line')
+            dash_table.DataTable(page_size=10, id='tabel_khoi')
+        ])
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='six columns', children=[
+            dcc.Graph(figure={}, id='mon_line-graph')
+            
+        ]),
+        html.Div(className='six columns', children=[
+            dcc.Graph(figure={}, id='khoi_line-graph')
         ])
     ])
 ])
@@ -121,7 +138,18 @@ def text_value(year_chosen):
     return total, KHTN, KHXH, both,less2
 
 @callback(
-    Output(component_id='mon_khong_thi-graph', component_property='figure'),
+    Output(component_id='tabel_tonghop', component_property='data'),
+    Input(component_id='controls-year', component_property='value')
+)
+def table_tonghop(tinh_chosen):
+    output= df[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD','Year']].groupby('Year').agg('mean').round(2).reset_index()
+    output=output.T.reset_index()
+    output.columns=output.iloc[0]
+    output=output[1:]
+    return output.to_dict('records')
+
+@callback(
+    Output(component_id='mon_thi-graph', component_property='figure'),
     Input(component_id='controls-year', component_property='value')
 )
 def update_graph_monthi(year_chosen):
@@ -136,7 +164,7 @@ def update_graph_monthi(year_chosen):
     return fig
 
 @callback(
-    Output(component_id='mon_thi-graph', component_property='figure'),
+    Output(component_id='mon_khong_thi-graph', component_property='figure'),
     Input(component_id='controls-year', component_property='value')
 )
 def update_graph_monthi(year_chosen):
@@ -151,8 +179,7 @@ def update_graph_monthi(year_chosen):
     legend=dict(
         traceorder='normal',
         font=dict(size=12),
-        borderwidth=1
-    ))
+        borderwidth=1 ))
     return fig
 
 @callback(
@@ -169,11 +196,11 @@ def update_graph_mon(mon_chosen,year_chosen):
         data_output= (data[mon_chosen]*4).round()/4
         data_output=data_output.value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
-        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True,template='none')
+        fig = px.bar(data_output, x='Diem', y='counts', title="Phổ điểm theo môn",text_auto=True,template='none')
     else:
         data_output= data[mon_chosen].value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
-        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True,template='none')
+        fig = px.bar(data_output, x='Diem', y='counts', title="Phổ điểm theo môn",text_auto=True,template='none')
         fig.update_layout(width=1000, height=500)
     fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
     fig.update_traces(
@@ -265,26 +292,91 @@ def table_khoi(khoi_chosen,year_chosen):
                                         '']
                             })
     return output.to_dict('records')
+
 @callback(
-    Output(component_id='mon-line', component_property='data'),
-    Input(component_id='controls-mon', component_property='value'),
-    Input(component_id='controls-year', component_property='value')
+    Output(component_id='mon_line-graph', component_property='figure'),
+    Input(component_id='controls-mon', component_property='value')
 )
-def line_chart_mon(mon_chosen,year_chosen):
-    df1 = df[df['Year']==year_chosen]
-    data = df1[~df1[mon_chosen].isnull()]
+def line_mon(mon_chosen):
+    # df1 = df[df['Year']>=2020]
+    df1 = df[~df[mon_chosen].isnull()]
     if mon_chosen=='Van':
-        # data_output= data[mon_chosen]
-        # print(data_output)
-        data_output= (data[mon_chosen]*4).round()/4
-        data_output=data_output.value_counts().reset_index()
-        data_output.columns = ['Diem', 'counts']
-        fig = px.line(data_output, x='Diem', y='counts')
+        list_output=[]
+        for i in range(2020,2023):
+            data = df1[df1['Year']==i]
+            data_output= (data[mon_chosen]*4).round()/4
+            data_output=data_output.value_counts().reset_index()
+            data_output.columns = ['Diem', 'counts']
+            data_output = data_output.sort_values(by="Diem", ascending=True)
+            data_output['Year']=i
+            list_output.append(data_output)
+        data_output=pd.concat(list_output)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=data_output[data_output['Year']==2020]['Diem'], y=data_output[data_output['Year']==2020]['counts'],
+                    mode='lines',
+                    name='2020'))
+        fig.add_trace(go.Scatter(x=data_output[data_output['Year']==2021]['Diem'], y=data_output[data_output['Year']==2021]['counts'],
+                    mode='lines',
+                    name='2021'))
+        fig.add_trace(go.Scatter(x=data_output[data_output['Year']==2022]['Diem'], y=data_output[data_output['Year']==2022]['counts'],
+                    mode='lines',
+                    name='2022'))
     else:
-        data_output= data[mon_chosen].value_counts().reset_index()
+        list_output=[]
+        for i in range(2020,2023):
+            data = df1[df1['Year']==i]
+            data_output= data[mon_chosen].value_counts().reset_index()
+            data_output.columns = ['Diem', 'counts']
+            data_output = data_output.sort_values(by="Diem", ascending=True)
+            data_output['Year']=i
+            list_output.append(data_output)
+        data_output=pd.concat(list_output)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=data_output[data_output['Year']==2020]['Diem'], y=data_output[data_output['Year']==2020]['counts'],
+                    mode='lines',
+                    name='2020'))
+        fig.add_trace(go.Scatter(x=data_output[data_output['Year']==2021]['Diem'], y=data_output[data_output['Year']==2021]['counts'],
+                    mode='lines',
+                    name='2021'))
+        fig.add_trace(go.Scatter(x=data_output[data_output['Year']==2022]['Diem'], y=data_output[data_output['Year']==2022]['counts'],
+                    mode='lines',
+                    name='2022'))
+        fig.update_layout(width=1000, height=500,template='none'
+        )
+    fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
+    return fig 
+
+@callback(
+    Output(component_id='khoi_line-graph', component_property='figure'),
+    Input(component_id='controls-khoi', component_property='value')
+)
+def line_khoi(khoi_chosen):
+    list_output=[]
+    for i in range(2020,2023):
+        df1 = df[df['Year']==i]
+        data = df1[~df1[Khoi_dict[khoi_chosen]].isnull().any(axis=1)][Khoi_dict[khoi_chosen]]
+        data['Diem'] = data.sum(axis=1).round()
+        data_output = data.Diem.value_counts().reset_index()
+        # data_output = data_output.sort_values(by="Diem", ascending=True)
         data_output.columns = ['Diem', 'counts']
-        fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo mon",text_auto=True,template='none')
-    return fig
+        data_output = data_output.sort_values(by="Diem", ascending=True)
+        data_output['Year']=i
+        list_output.append(data_output)
+    data_output=pd.concat(list_output)
+    fig = px.bar(data_output, x='Diem', y='counts', title="Pho diem theo khoi",text_auto=True,template='none')
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data_output[data_output['Year']==2020]['Diem'], y=data_output[data_output['Year']==2020]['counts'],
+                mode='lines',
+                name='2020'))
+    fig.add_trace(go.Scatter(x=data_output[data_output['Year']==2021]['Diem'], y=data_output[data_output['Year']==2021]['counts'],
+                mode='lines',
+                name='2021'))
+    fig.add_trace(go.Scatter(x=data_output[data_output['Year']==2022]['Diem'], y=data_output[data_output['Year']==2022]['counts'],
+                mode='lines',
+                name='2022'))
+    fig.update_layout(width=1000, height=500,template='none')
+    fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90)
+    return fig 
 
 # Run the app
 if __name__ == '__main__':
