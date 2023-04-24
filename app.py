@@ -476,3 +476,5 @@ def line_khoi(khoi_chosen,tinh_chosen):
 # Run the app
 if __name__ == '__main__':
     app.run_server(debug=True)
+    
+#ThanhNB sửa lúc 4/49
