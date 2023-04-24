@@ -143,16 +143,6 @@ def text_value(year_chosen,tinh_chosen):
     null_fill = df1.isnull().sum(axis=1)
     less2 = null_fill[null_fill>6].shape[0]
     return total, KHTN, KHXH, both,less2
-# @callback(
-#     Output(component_id='tabel_tonghop', component_property='data'),
-#     Input(component_id='controls-year', component_property='value')
-# )
-# def table_tonghop(tinh_chosen):
-#     output= df[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD','Year']].groupby('Year').agg('mean').round(2).reset_index()
-#     output=output.T.reset_index()
-#     output.columns=output.iloc[0]
-#     output=output[1:]
-#     return output.to_dict('records')
 
 @callback(
     Output(component_id='mon_thi-graph', component_property='figure'),
