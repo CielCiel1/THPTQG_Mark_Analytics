@@ -119,8 +119,6 @@ app.layout = html.Div([
         ])
     ])
 ])
-
-
 # Add controls to build the interaction
 @callback(
     [Output(component_id='Tổng số sinh viên thi', component_property='children'),
