@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import math
 
 # Incorporate data
-df = pd.read_csv('diem.csv')
+df = pd.read_csv('diem_2022.csv')
 tinh = pd.read_csv('Tỉnh_define_code.csv')
 Khoi_dict = {"A":['Toan', 'Ly', 'Hoa'],
              'B':['Toan', 'Hoa','Sinh'],
@@ -92,6 +92,11 @@ app.layout = html.Div([
     ]),
 
     html.Div(className='row', children=[
+        dcc.Graph(figure={},id='ti_le_diem')
+    ]),
+
+
+    html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh','Lich su', 'Dia ly', 'GDCD'],value='Toan',  id='controls-mon'),
             dcc.Graph(figure={}, id='mon-graph'),
@@ -114,8 +119,6 @@ app.layout = html.Div([
         ])
     ])
 ])
-
-
 # Add controls to build the interaction
 @callback(
     [Output(component_id='Tổng số sinh viên thi', component_property='children'),
@@ -140,16 +143,6 @@ def text_value(year_chosen,tinh_chosen):
     null_fill = df1.isnull().sum(axis=1)
     less2 = null_fill[null_fill>6].shape[0]
     return total, KHTN, KHXH, both,less2
-# @callback(
-#     Output(component_id='tabel_tonghop', component_property='data'),
-#     Input(component_id='controls-year', component_property='value')
-# )
-# def table_tonghop(tinh_chosen):
-#     output= df[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD','Year']].groupby('Year').agg('mean').round(2).reset_index()
-#     output=output.T.reset_index()
-#     output.columns=output.iloc[0]
-#     output=output[1:]
-#     return output.to_dict('records')
 
 @callback(
     Output(component_id='mon_thi-graph', component_property='figure'),
@@ -166,7 +159,7 @@ def update_graph_monthi(year_chosen,tinh_chosen):
     output= df1.isnull().sum().reset_index()
     output.columns=['Môn','counts']
     output['counts']=df1.shape[0]-output['counts']
-    fig=px.bar(output,x='counts',y='Môn',title='Số thí sinh thi các môn', orientation='h',template='none')
+    fig=px.bar(output,x='counts',y='Môn',title=f'Số thí sinh thi các môn {tinh_chosen} {year_chosen}', orientation='h',template='none')
     fig.update_layout(
     yaxis=dict(categoryorder='total ascending'))
     fig.update_traces(textposition='inside',textfont=dict(size=10))
@@ -190,13 +183,44 @@ def update_graph_monthi(year_chosen,tinh_chosen):
     output = output.value_counts().reset_index()
     output.columns=['Số môn thi','counts']
     custom_colors = ['#1B72C9', '#E65DE2', '#900C3F', '#581845']
-    fig=px.pie(output,values='counts',names='Số môn thi',title='Tỉ lệ thi số môn',template='none', color_discrete_sequence = custom_colors)
+    fig=px.pie(output,values='counts',names='Số môn thi',title=f'Tỉ lệ thi số môn năm {tinh_chosen} {year_chosen}',template='none', color_discrete_sequence = custom_colors)
     fig.update_layout(
     legend_title='Tổng số môn thi',width=500, height=500,
     legend=dict(
         traceorder='normal',
         font=dict(size=12)
          ))
+    return fig
+
+@callback(
+    Output(component_id='ti_le_diem', component_property='figure'),
+    Input(component_id='controls-khoi', component_property='value'),
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='controls-tinh', component_property='value')
+)
+def update_graph_ti_le(khoi_chosen,year_chosen,tinh_chosen):
+    if tinh_chosen !='Toàn Quốc':
+        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df.copy()
+    df1 = df_tinh[df_tinh['Year']==year_chosen]
+    data = df1[~df1[Khoi_dict[khoi_chosen]].isnull().any(axis=1)][Khoi_dict[khoi_chosen]]
+    data['Diem'] = data.sum(axis=1).round()
+    data['Range_Điểm'] = np.where(data['Diem']<=15,'0-15',
+                                  np.where(data['Diem']<=20,'15-20',
+                                           np.where(data['Diem']<=24,'20-24',
+                                                    np.where(data['Diem']<=27,'24-27',
+                                                             '>27'))))
+    data_output = data['Range_Điểm'].value_counts().reset_index()
+    data_output.columns = ['Diem', 'counts']
+    fig = px.bar(data_output, x='counts', y='Diem', title=f"Tỉ lệ điểm theo khối {khoi_chosen}",text_auto=True,template='none', orientation='h')
+    # fig.update_layout(width=1000, height=500)
+    fig.update_xaxes(tickvals = data_output['Diem'].unique(), title = 'Tổng số sinh viên')
+    fig.update_traces(
+    textposition='inside',textfont=dict(
+        size=10))
+    # print(data_output)
+    fig.update_yaxes(title = 'Khoảng điểm')
     return fig
 
 @callback(
@@ -218,11 +242,11 @@ def update_graph_mon(mon_chosen,year_chosen,tinh_chosen):
         data_output= (data[mon_chosen]*4).round()/4
         data_output=data_output.value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
-        fig = px.bar(data_output, x='Diem', y='counts', title="Phổ điểm theo môn",text_auto=True,template='none')
+        fig = px.bar(data_output, x='Diem', y='counts', title=f"Phổ điểm theo môn {mon_chosen}",text_auto=True,template='none')
     else:
         data_output= data[mon_chosen].value_counts().reset_index()
         data_output.columns = ['Diem', 'counts']
-        fig = px.bar(data_output, x='Diem', y='counts', title="Phổ điểm theo môn",text_auto=True,template='none')
+        fig = px.bar(data_output, x='Diem', y='counts', title=f"Phổ điểm theo môn {mon_chosen}",text_auto=True,template='none')
         fig.update_layout(width=1000, height=500)
     fig.update_xaxes(tickvals = data_output['Diem'].unique(),tickangle=90,title = 'Điểm')
     fig.update_traces(
@@ -286,7 +310,7 @@ def update_graph_khoi(khoi_chosen,year_chosen,tinh_chosen):
     data['Diem'] = data.sum(axis=1).round()
     data_output = data.Diem.value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
-    fig = px.bar(data_output, x='Diem', y='counts', title="Phổ điểm theo khối",text_auto=True,template='none')
+    fig = px.bar(data_output, x='Diem', y='counts', title=f"Phổ điểm theo khối {khoi_chosen}",text_auto=True,template='none')
     fig.update_layout(width=1000, height=500)
     fig.update_xaxes(tickvals = data_output['Diem'].unique(), title = 'Điểm')
     fig.update_traces(
