@@ -82,17 +82,19 @@ app.layout = html.Div([
                                 #  style_data={ 'border': '1px solid blue' }
                                  )
         ]),
-        html.Div(className='five columns', children=[
+        html.Div(className='eight columns', children=[
             dcc.Graph(figure={}, id='mon_thi-graph')
             
-        ]),
-        html.Div(className='three columns', children=[
-            dcc.Graph(figure={}, id='mon_khong_thi-graph')
         ])
     ]),
 
     html.Div(className='row', children=[
-        dcc.Graph(figure={},id='ti_le_diem')
+        html.Div(className='six columns', children=[
+            dcc.Graph(figure={},id='ti_le_diem')
+        ]),
+        html.Div(className='six columns', children=[
+            dcc.Graph(figure={}, id='mon_khong_thi-graph')
+        ])
     ]),
 
 
@@ -185,7 +187,7 @@ def update_graph_monthi(year_chosen,tinh_chosen):
     custom_colors = ['#1B72C9', '#E65DE2', '#900C3F', '#581845']
     fig=px.pie(output,values='counts',names='Số môn thi',title=f'Tỉ lệ thi số môn năm {tinh_chosen} {year_chosen}',template='none', color_discrete_sequence = custom_colors)
     fig.update_layout(
-    legend_title='Tổng số môn thi',width=500, height=500,
+    legend_title='Tổng số môn thi',#width=500, height=500,
     legend=dict(
         traceorder='normal',
         font=dict(size=12)
@@ -210,17 +212,17 @@ def update_graph_ti_le(khoi_chosen,year_chosen,tinh_chosen):
                                   np.where(data['Diem']<=20,'15-20',
                                            np.where(data['Diem']<=24,'20-24',
                                                     np.where(data['Diem']<=27,'24-27',
-                                                             '>27'))))
+                                                             '27-30'))))
+    custom_colors = ['#1B72C9', '#E65DE2', '#900C3F', '#581845']
     data_output = data['Range_Điểm'].value_counts().reset_index()
     data_output.columns = ['Diem', 'counts']
-    fig = px.bar(data_output, x='counts', y='Diem', title=f"Tỉ lệ điểm theo khối {khoi_chosen}",text_auto=True,template='none', orientation='h')
-    # fig.update_layout(width=1000, height=500)
-    fig.update_xaxes(tickvals = data_output['Diem'].unique(), title = 'Tổng số sinh viên')
-    fig.update_traces(
-    textposition='inside',textfont=dict(
-        size=10))
-    # print(data_output)
-    fig.update_yaxes(title = 'Khoảng điểm')
+    fig = px.pie(data_output, values='counts', names='Diem', title=f"Tỉ lệ điểm theo khối {khoi_chosen}" ,template='none', color_discrete_sequence = custom_colors)
+    fig.update_layout(
+    legend_title='Tổng số môn thi',#width=500, height=500,
+    legend=dict(
+        traceorder='normal',
+        font=dict(size=12)
+         ))
     return fig
 
 @callback(
