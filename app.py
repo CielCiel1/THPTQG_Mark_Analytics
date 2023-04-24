@@ -92,7 +92,7 @@ app.layout = html.Div([
         html.Div(className='six columns', children=[
             dcc.Graph(figure={},id='ti_le_diem')
         ]),
-        html.Div(className='six columns', children=[
+        html.Div(className='five columns', children=[
             dcc.Graph(figure={}, id='mon_khong_thi-graph')
         ])
     ]),
