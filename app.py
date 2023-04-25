@@ -38,8 +38,8 @@ app.layout = html.Div([
              style={'textAlign': 'center', 'color': 'blue', 'fontSize': 30}),
     
     html.Div(className='row', children=[
-        dcc.Dropdown(options=[i for i in tinh_dict.keys()],value='Toàn Quốc',  id='controls-tinh'),
-        dcc.Dropdown(options=[i for i in range(2017,2023)],value=2022,  id='controls-year')
+        dcc.Dropdown(options=[i for i in tinh_dict.keys()],value='Toàn Quốc',  id='controls-tinh', style={'marginRight':'10px','width':'50%'}),
+        dcc.Dropdown(options=[i for i in range(2017,2023)],value=2022,  id='controls-year', style={'marginRight':'10px','width':'50%'})
     ]),
 
     html.Div(className='row', children=[
@@ -76,8 +76,10 @@ app.layout = html.Div([
     html.Div(className='row', children=[
         html.Div(className = 'one clomuns',children=[]),
         html.Div(className='three columns', children=[
-            html.Hr(),
-            html.Label('Thống kê điểm trung bình qua các năm',style={'paddingTop': '.3rem','text-align':'center'}),
+            html.Br(),
+            html.Br(),
+            html.Label('Thống kê điểm trung bình qua các năm',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
+            html.Br(),
             dash_table.DataTable(dt.to_dict('records'), [{"name": i, "id": i} for i in dt.columns]
                                 #  style_cell={'padding': '5px'},
                                 #  style_data={ 'border': '1px solid blue' }
@@ -98,7 +100,6 @@ app.layout = html.Div([
         ])
     ]),
 
-
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh','Lich su', 'Dia ly', 'GDCD'],value='Toan',  id='controls-mon'),
@@ -112,6 +113,7 @@ app.layout = html.Div([
             dash_table.DataTable(page_size=10, id='tabel_khoi')
         ])
     ]),
+
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dcc.Graph(figure={}, id='mon_line-graph')
@@ -121,12 +123,27 @@ app.layout = html.Div([
             dcc.Graph(figure={}, id='khoi_line-graph')
         ])
     ]),
+
     html.Div(className='row', children=[
-        html.Div(className='chon', children=[
+        html.Div(className='input', children=[
             html.I('Nhập tổng điểm 3 môn của bạn:'),
-            dcc.Input(id="Diem_cua_ban", type="number", placeholder='Nhập điểm của bạn',value=24, style={'marginRight':'10px'}),
-            dcc.Input(id="Truong_cua_ban", type="text", placeholder='Nhập trường của bạn', style={'marginRight':'10px'}),
-            dash_table.DataTable(page_size=10, id='table_daihoc')
+            dcc.Input(id="Diem_cua_ban", type="number", placeholder='Nhập điểm của bạn',value=24, style={'marginRight':'10px','width':'10%'}),
+            dcc.Input(id="Truong_cua_ban", type="text", placeholder='Nhập trường của bạn', style={'marginRight':'10px','width':'22%'}),
+            dcc.Input(id="Khoi_cua_ban", type="text", placeholder='Nhập khối của bạn', style={'marginRight':'10px','width':'20%'}),
+            html.Br()
+        ])
+    ]),
+
+    html.Div(className='row', children=[
+        html.Div(className='six columns', children=[
+            html.Br(),
+            html.Label('Tên bảng',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
+            dash_table.DataTable(style_data={'whiteSpace': 'normal','height': 'auto',},page_size=10, id='table_daihoc')
+        ]),
+        html.Div(className='six columns', children=[
+            html.Br(),
+            html.Label('Tên bảng',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
+            dash_table.DataTable(style_data={'whiteSpace': 'normal','height': 'auto',},page_size=10, id='table_trungbinh')
         ])
     ])
 ])
@@ -485,15 +502,37 @@ def line_khoi(khoi_chosen,tinh_chosen):
 @callback(
     Output(component_id='table_daihoc', component_property='data'),
     Input(component_id='controls-year', component_property='value'),
-    Input(component_id='controls-khoi', component_property='value'),
+    Input(component_id='Khoi_cua_ban', component_property='value'),
     Input(component_id='Diem_cua_ban', component_property='value'),
     Input(component_id='Truong_cua_ban', component_property='value')
 )
 def table_diemdaihoc(year_chosen,khoi_chosen,diem_cua_ban,truong_cua_ban):
-    output = diemchuan[diemchuan['Tổ hợp môn'].str.contains(khoi_chosen)]
-    output = output[output['Điểm chuẩn']<=diem_cua_ban]
+    output = diemchuan[diemchuan['Điểm chuẩn']<=diem_cua_ban]
+    if khoi_chosen!=None:
+        output = output[output['Tổ hợp môn'].str.contains(khoi_chosen)]
     if truong_cua_ban!=None:
         output = output[output['Tên trường'].str.lower().str.contains(truong_cua_ban.lower())]
+    output = output.sort_values('Điểm chuẩn',ascending=False)
+    return output.to_dict('records')
+
+@callback(
+    Output(component_id='table_trungbinh', component_property='data'),
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='Khoi_cua_ban', component_property='value')
+)
+def table_diemtrungbinh(year_chosen,khoi_chosen):
+    if khoi_chosen in Khoi_dict.keys():
+        df1 = df[df['Year']==year_chosen]
+        data = df1[~df1[Khoi_dict[khoi_chosen]].isnull().any(axis=1)][Khoi_dict[khoi_chosen]]
+        data['Diem'] = data.sum(axis=1).round()
+    else:
+        df1 = df[df['Year']==year_chosen]
+        data = df1[~df1[Khoi_dict['A00']].isnull().any(axis=1)][Khoi_dict['A00']]
+        data['Diem'] = data.sum(axis=1).round()
+    diem_cua_ban= data['Diem'].mean()
+    diem_cua_ban_ab=diem_cua_ban+3
+    diem_cua_ban_bl=diem_cua_ban-3
+    output = diemchuan[(diemchuan['Điểm chuẩn']<=diem_cua_ban_ab)&(diemchuan['Điểm chuẩn']>=diem_cua_ban_bl)]
     output = output.sort_values('Điểm chuẩn',ascending=False)
     return output.to_dict('records')
 
