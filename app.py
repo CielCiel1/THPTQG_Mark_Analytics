@@ -218,7 +218,7 @@ def update_graph_ti_le(khoi_chosen,year_chosen,tinh_chosen):
     data_output.columns = ['Diem', 'counts']
     fig = px.pie(data_output, values='counts', names='Diem', title=f"Tỉ lệ điểm theo khối {khoi_chosen}" ,template='none', color_discrete_sequence = custom_colors)
     fig.update_layout(
-    legend_title='Tổng số môn thi',#width=500, height=500,
+    legend_title='Tổng điểm khối thi',#width=500, height=500,
     legend=dict(
         traceorder='normal',
         font=dict(size=12)
