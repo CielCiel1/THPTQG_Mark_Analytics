@@ -8,11 +8,12 @@ import math
 # Incorporate data
 df = pd.read_csv('diem_2022.csv')
 tinh = pd.read_csv('Tỉnh_define_code.csv')
-Khoi_dict = {"A":['Toan', 'Ly', 'Hoa'],
-             'B':['Toan', 'Hoa','Sinh'],
-             'C':['Lich su', 'Dia ly', 'Van'],
-             'D':['Toan', 'Van', 'Ngoai ngu'],
-             'A1':['Toan','Ly','Ngoai ngu']}
+diemchuan=pd.read_csv('diemchuan.csv')
+Khoi_dict = {"A00":['Toan', 'Ly', 'Hoa'],
+             'B00':['Toan', 'Hoa','Sinh'],
+             'C00':['Lich su', 'Dia ly', 'Van'],
+             'D01':['Toan', 'Van', 'Ngoai ngu'],
+             'A01':['Toan','Ly','Ngoai ngu']}
 To_hop_dict = {'KHTN':['Sinh', 'Ly', 'Hoa'],
                'KHXH':['Lich su', 'Dia ly', 'GDCD'],
                'both':['Sinh', 'Ly', 'Hoa','Lich su', 'Dia ly', 'GDCD']}
@@ -106,7 +107,7 @@ app.layout = html.Div([
             
         ]),
         html.Div(className='six columns', children=[
-            dcc.Dropdown(options=['A','B','C','D','A1'],value='A',  id='controls-khoi'),
+            dcc.Dropdown(options=['A00','B00','C00','D01','A01'],value='A00',  id='controls-khoi'),
             dcc.Graph(figure={}, id='khoi-graph'),
             dash_table.DataTable(page_size=10, id='tabel_khoi')
         ])
@@ -118,6 +119,14 @@ app.layout = html.Div([
         ]),
         html.Div(className='six columns', children=[
             dcc.Graph(figure={}, id='khoi_line-graph')
+        ])
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='chon', children=[
+            html.I('Nhập tổng điểm 3 môn của bạn:'),
+            dcc.Input(id="Diem_cua_ban", type="number", placeholder='Nhập điểm của bạn',value=24, style={'marginRight':'10px'}),
+            dcc.Input(id="Truong_cua_ban", type="text", placeholder='Nhập trường của bạn', style={'marginRight':'10px'}),
+            dash_table.DataTable(page_size=10, id='table_daihoc')
         ])
     ])
 ])
@@ -472,6 +481,21 @@ def line_khoi(khoi_chosen,tinh_chosen):
     fig.update_yaxes(title = 'Tổng số sinh viên')
     
     return fig 
+
+@callback(
+    Output(component_id='table_daihoc', component_property='data'),
+    Input(component_id='controls-year', component_property='value'),
+    Input(component_id='controls-khoi', component_property='value'),
+    Input(component_id='Diem_cua_ban', component_property='value'),
+    Input(component_id='Truong_cua_ban', component_property='value')
+)
+def table_diemdaihoc(year_chosen,khoi_chosen,diem_cua_ban,truong_cua_ban):
+    output = diemchuan[diemchuan['Tổ hợp môn'].str.contains(khoi_chosen)]
+    output = output[output['Điểm chuẩn']<=diem_cua_ban]
+    if truong_cua_ban!=None:
+        output = output[output['Tên trường'].str.lower().str.contains(truong_cua_ban.lower())]
+    output = output.sort_values('Điểm chuẩn',ascending=False)
+    return output.to_dict('records')
 
 # Run the app
 if __name__ == '__main__':
