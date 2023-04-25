@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import math
 
 # Incorporate data
-df = pd.read_csv('diem_2022.csv')
+df = pd.read_csv('data_full.csv')
 tinh = pd.read_csv('Tỉnh_define_code.csv')
 diemchuan=pd.read_csv('diemchuan.csv')
 Khoi_dict = {"A00":['Toan', 'Ly', 'Hoa'],
@@ -35,13 +35,14 @@ app = Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
     html.Div(className='row', children='Phân tích điểm thi THPT Quốc gia',
-             style={'textAlign': 'center', 'color': 'blue', 'fontSize': 30}),
+             style={'textAlign': 'center', 'color': 'red', 'fontSize': 35}),
     
     html.Div(className='row', children=[
         dcc.Dropdown(options=[i for i in tinh_dict.keys()],value='Toàn Quốc',  id='controls-tinh', style={'marginRight':'10px','width':'100%'}),
         dcc.Dropdown(options=[i for i in range(2017,2023)],value=2022,  id='controls-year', style={'marginRight':'10px','width':'100%'})
     ]),
-
+    html.Div(className='row', children='Phân tích tổng quan',
+             style={'textAlign': 'center', 'color': 'blue', 'fontSize': 25}),
     html.Div(className='row', children=[
         html.Div(children=[
             html.H3(id='Tổng số sinh viên thi', style={'fontWeight': 'bold','text-align':'center'}),
@@ -99,7 +100,9 @@ app.layout = html.Div([
             dcc.Graph(figure={}, id='mon_khong_thi-graph')
         ])
     ]),
-
+    html.Div(className='row', children='Phân tích phổ điểm',
+             style={'textAlign': 'center', 'color': 'blue', 'fontSize': 25}),
+    html.Br(),
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh','Lich su', 'Dia ly', 'GDCD'],value='Toan',  id='controls-mon'),
@@ -123,7 +126,9 @@ app.layout = html.Div([
             dcc.Graph(figure={}, id='khoi_line-graph')
         ])
     ]),
-
+    html.Div(className='row', children='Thống kê điểm chuẩn các trường Đại học',
+             style={'textAlign': 'center', 'color': 'blue', 'fontSize': 25}),
+    html.Br(),
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             html.I('Nhập tổng điểm của bạn:'),
@@ -131,13 +136,18 @@ app.layout = html.Div([
             dcc.Input(id="Truong_cua_ban_b1", type="text", placeholder='Nhập trường bạn cần tìm', style={'marginRight':'10px','width':'32%'}),
             dcc.Input(id="Khoi_cua_ban_b1", type="text", placeholder='Nhập khối của bạn', style={'marginRight':'10px','width':'32%'}),
             html.Br(),
+            html.I('* chỉ hiện thị điểm chuẩn nhỏ hơn hoặc bằng tổng điểm của bạn', style={'color':'red','font-size': '12px'}),
+            html.Br(),
             html.Br(),
             html.Label('Tìm kiếm điểm chuẩn',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
             dash_table.DataTable(style_data={'whiteSpace': 'normal','height': 'auto',},page_size=10, id='table_daihoc')
+            # html.I('* chỉ hiện thị điểm chuẩn nhỏ hơn hoặc bằng tổng điểm của bạn', style={'color':'red','font-size': '12px'})
         ]),
         html.Div(className='six columns', children=[
-            dcc.Input(id="Truong_cua_ban_b2", type="text", placeholder='Nhập trường bạn cần tìm', style={'marginRight':'10px','width':'48%'}),
-            dcc.Input(id="Khoi_cua_ban_b2", type="text", placeholder='Nhập khối của bạn', style={'marginRight':'10px','width':'48%'}),
+            dcc.Input(id="Truong_cua_ban_b2", type="text", placeholder='Nhập trường bạn cần tìm', style={'marginRight':'10px','width':'100%'}),
+            # dcc.Input(id="Khoi_cua_ban_b2", type="text", placeholder='Nhập khối của bạn', style={'marginRight':'10px','width':'48%'}),
+            html.Br(),
+            html.I('* hiện thị điểm chuẩn của các trường trong khoảng +-3 điểm so với điểm trung bình của Khối', style={'color':'red','font-size': '12px'}),
             html.Br(),
             html.Br(),
             html.Label('So sánh phổ điểm theo khối và điểm chuẩn của các trường Đại Học',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
@@ -516,7 +526,7 @@ def table_diemdaihoc(year_chosen,khoi_chosen,diem_cua_ban,truong_cua_ban):
 @callback(
     Output(component_id='table_trungbinh', component_property='data'),
     Input(component_id='controls-year', component_property='value'),
-    Input(component_id='Khoi_cua_ban_b2', component_property='value'),
+    Input(component_id='controls-khoi', component_property='value'),
     Input(component_id='Truong_cua_ban_b2', component_property='value')
 )
 def table_diemtrungbinh(year_chosen,khoi_chosen,truong_cua_ban):
