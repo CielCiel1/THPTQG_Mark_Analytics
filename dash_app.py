@@ -5,7 +5,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-df = pd.read_csv('diem_2022.csv')
+df = pd.read_csv('data_full.csv')
 df = df[['SBD', 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD', 'MaTinh', 'Year']]
 df.columns =[ 'SBD','Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD','Mã Tỉnh','Year']
 tinh = pd.read_csv('Tinh.csv')
@@ -313,7 +313,7 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     #Figure subject line
     list_output=[]
     for i in range(2020,2023):
-        data = df1[df1['Year']==i]
+        data = df[df['Year']==i]
         data_subject_line= data[mon_chosen].value_counts().reset_index()
         data_subject_line.columns = ['Diem', 'counts']
         data_subject_line = data_subject_line.sort_values(by="Diem", ascending=True)
@@ -411,4 +411,4 @@ def table_universities(khoi_chosen,diem_cua_ban,truong_cua_ban,khoi_chosen2, tru
     return table_univer.to_dict('records'), output_table_univer_avg.to_dict('records')
 # Run the app
 if __name__ == '__main__': 
-    app.run_server(debug=False, host="0.0.0.0",port=8050)
+    app.run_server(debug=True)
