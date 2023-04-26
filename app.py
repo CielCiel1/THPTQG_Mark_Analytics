@@ -118,6 +118,7 @@ app.layout = html.Div([
             dash_table.DataTable(page_size=10, id='tabel_khoi')
         ])
     ]),
+
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dcc.Graph(figure={}, id='mon_line-graph')
