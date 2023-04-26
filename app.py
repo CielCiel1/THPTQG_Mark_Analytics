@@ -4,6 +4,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import math
+import pkg_resources
 
 # Incorporate data
 df = pd.read_csv('data_full.csv')
@@ -549,4 +550,12 @@ def table_diemtrungbinh(year_chosen,khoi_chosen,truong_cua_ban):
 
 # Run the app
 if __name__ == '__main__':
+    # installed_packages = pkg_resources.working_set
+    # installed_packages_list = sorted(["%s==%s" % (i.key, i.version) for i in installed_packages])
+    # print(installed_packages_list)  
     app.run_server(debug=True)
+
+# import pkg_resources
+# installed_packages = pkg_resources.working_set
+# installed_packages_list = sorted(["%s==%s" % (i.key, i.version) for i in installed_packages])
+# print(installed_packages_list)
