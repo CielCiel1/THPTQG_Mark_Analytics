@@ -182,10 +182,19 @@ app.layout = html.Div([
 )
 
 def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
-    if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
-    else:
+    try:
+        if tinh_chosen != None:
+            tinh_chosen = tinh_chosen
+        else:
+            tinh_chosen = 'Toàn Quốc'
+    except Exception as e:
+        print(e)
+        tinh_chosen = 'Toàn Quốc'
+    if tinh_chosen =='Toàn Quốc' or tinh_chosen == None:
         df_tinh=df.copy()
+        # df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
+    else:
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     df1 = df_tinh[df_tinh['Year']==year_chosen]
 
     #Text_value
@@ -257,7 +266,7 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
                                        'Số sinh viên đạt điểm >9',
                                        'Số điểm nhiều thí sinh đạt nhất'],
                             "Số lượng":[data_mon.shape[0],
-                                        data_mon[mon_chosen].mean().round(2),
+                                        round(data_mon[mon_chosen].mean(),2),
                                         data_mon[data_mon[mon_chosen]<=1].shape[0],
                                         data_mon[data_mon[mon_chosen]<5].shape[0],
                                         data_mon[data_mon[mon_chosen]>9].shape[0],
@@ -402,4 +411,4 @@ def table_universities(khoi_chosen,diem_cua_ban,truong_cua_ban,khoi_chosen2, tru
     return table_univer.to_dict('records'), output_table_univer_avg.to_dict('records')
 # Run the app
 if __name__ == '__main__': 
-    app.run_server(debug=True)
+    app.run_server(debug=False, host="0.0.0.0",port=8050)
