@@ -7,19 +7,21 @@ import math
 
 # Incorporate data
 df = pd.read_csv('data_full.csv')
+df = df[['SBD', 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD', 'MaTinh', 'Year']]
+df.columns =[ 'SBD','Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD','Mã Tỉnh','Year']
 tinh = pd.read_csv('Tỉnh_define_code.csv')
 diemchuan=pd.read_csv('diemchuan.csv')
-Khoi_dict = {"A00":['Toan', 'Ly', 'Hoa'],
-             'B00':['Toan', 'Hoa','Sinh'],
-             'C00':['Lich su', 'Dia ly', 'Van'],
-             'D01':['Toan', 'Van', 'Ngoai ngu'],
-             'A01':['Toan','Ly','Ngoai ngu']}
-To_hop_dict = {'KHTN':['Sinh', 'Ly', 'Hoa'],
-               'KHXH':['Lich su', 'Dia ly', 'GDCD'],
-               'both':['Sinh', 'Ly', 'Hoa','Lich su', 'Dia ly', 'GDCD']}
+Khoi_dict = {"A00":['Toán', 'Lý', 'Hóa'],
+             'B00':['Toán', 'Hóa','Sinh'],
+             'C00':['Lịch sử', 'Địa lý', 'Văn'],
+             'D01':['Toán', 'Văn', 'Ngoại ngữ'],
+             'A01':['Toán','Lý','Ngoại ngữ']}
+To_hop_dict = {'KHTN':['Sinh', 'Lý', 'Hóa'],
+               'KHXH':['Lịch sử', 'Địa lý', 'GDCD'],
+               'both':['Sinh', 'Lý', 'Hóa','Lịch sử', 'Địa lý', 'GDCD']}
 tinh_dict = tinh.set_index('Tên').to_dict()['Mã']
 
-dt = df[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD','Year']].groupby('Year').agg('mean').round(2).reset_index()
+dt = df[[ 'Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD','Year']].groupby('Year').agg('mean').round(2).reset_index()
 dt["Year"] = dt['Year'].astype(str)
 dt = dt.T.reset_index()
 dt.columns = dt.iloc[0]
@@ -63,7 +65,7 @@ app.layout = html.Div([
             html.H3(id='Tổng số sinh viên thi KHTN+KHXH', style={'fontWeight': 'bold', 'color': '#006600','text-align':'center'}),
             html.Label('Tổng số sinh viên thi KHTN + KHXH', style={'paddingTop': '.3rem','text-align':'center'}),
         
-        ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
+        ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),   
 
         html.Div(children=[
             html.H3(id='Tổng số sinh viên thi ít hơn 3 môn', style={'fontWeight': 'bold', 'color': '#660033','text-align':'center'}),
@@ -96,7 +98,7 @@ app.layout = html.Div([
         html.Div(className='six columns', children=[
             dcc.Graph(figure={},id='ti_le_diem')
         ]),
-        html.Div(className='six columns', children=[
+        html.Div(className='three columns', children=[
             dcc.Graph(figure={}, id='mon_khong_thi-graph')
         ])
     ]),
@@ -105,7 +107,7 @@ app.layout = html.Div([
     html.Br(),
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
-            dcc.Dropdown(options=['Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh','Lich su', 'Dia ly', 'GDCD'],value='Toan',  id='controls-mon'),
+            dcc.Dropdown(options=[ 'Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD'],value='Toán',  id='controls-mon'),
             dcc.Graph(figure={}, id='mon-graph'),
             dash_table.DataTable(page_size=10, id='tabel_mon')
             
@@ -116,7 +118,6 @@ app.layout = html.Div([
             dash_table.DataTable(page_size=10, id='tabel_khoi')
         ])
     ]),
-
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dcc.Graph(figure={}, id='mon_line-graph')
@@ -136,7 +137,7 @@ app.layout = html.Div([
             dcc.Input(id="Truong_cua_ban_b1", type="text", placeholder='Nhập trường bạn cần tìm', style={'marginRight':'10px','width':'32%'}),
             dcc.Input(id="Khoi_cua_ban_b1", type="text", placeholder='Nhập khối của bạn', style={'marginRight':'10px','width':'32%'}),
             html.Br(),
-            html.I('* chỉ hiện thị điểm chuẩn nhỏ hơn hoặc bằng tổng điểm của bạn', style={'color':'red','font-size': '12px'}),
+            html.I('* chỉ hiện thị điểm chuẩn nhỏ hơn hoặc bằng tổng điểm của bạn,(lưu ý khối A sẽ nhập A00, khối B : B00,.. )', style={'color':'red','font-size': '12px'}),
             html.Br(),
             html.Br(),
             html.Label('Tìm kiếm điểm chuẩn',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
@@ -168,7 +169,7 @@ app.layout = html.Div([
 )
 def text_value(year_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã tin']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[df_tinh['Year']==year_chosen]
@@ -187,11 +188,11 @@ def text_value(year_chosen,tinh_chosen):
 )
 def update_graph_monthi(year_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[df_tinh['Year']==year_chosen]
-    df1 = df1[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD']]
+    df1 = df1[[ 'Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD']]
     output= df1.isnull().sum().reset_index()
     output.columns=['Môn','counts']
     output['counts']=df1.shape[0]-output['counts']
@@ -210,18 +211,18 @@ def update_graph_monthi(year_chosen,tinh_chosen):
 )
 def update_graph_monthi(year_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[df_tinh['Year']==year_chosen]
-    df1 = df1[[ 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD']]
+    df1 = df1[[ 'Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD']]
     output= 9-df1.isnull().sum(axis=1)
     output = output.value_counts().reset_index()
     output.columns=['Số môn thi','counts']
     custom_colors = ['#1B72C9', '#E65DE2', '#900C3F', '#581845']
     fig=px.pie(output,values='counts',names='Số môn thi',title=f'Tỉ lệ thi số môn năm {tinh_chosen} {year_chosen}',template='none', color_discrete_sequence = custom_colors)
     fig.update_layout(
-    legend_title='Tổng số môn thi',#width=500, height=500,
+    legend_title='Tổng số môn thi',width=500, height=450,
     legend=dict(
         traceorder='normal',
         font=dict(size=12)
@@ -236,7 +237,7 @@ def update_graph_monthi(year_chosen,tinh_chosen):
 )
 def update_graph_ti_le(khoi_chosen,year_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[df_tinh['Year']==year_chosen]
@@ -267,12 +268,12 @@ def update_graph_ti_le(khoi_chosen,year_chosen,tinh_chosen):
 )
 def update_graph_mon(mon_chosen,year_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[df_tinh['Year']==year_chosen]
     data = df1[~df1[mon_chosen].isnull()]
-    if mon_chosen=='Van':
+    if mon_chosen=='Văn':
         # data_output= data[mon_chosen]
         # print(data_output)
         data_output= (data[mon_chosen]*4).round()/4
@@ -305,7 +306,7 @@ def update_graph_mon(mon_chosen,year_chosen,tinh_chosen):
 )
 def table_mon(mon_chosen,year_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[df_tinh['Year']==year_chosen]
@@ -338,7 +339,7 @@ def table_mon(mon_chosen,year_chosen,tinh_chosen):
 )
 def update_graph_khoi(khoi_chosen,year_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[df_tinh['Year']==year_chosen]
@@ -364,7 +365,7 @@ def update_graph_khoi(khoi_chosen,year_chosen,tinh_chosen):
 )
 def table_khoi(khoi_chosen,year_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[df_tinh['Year']==year_chosen]
@@ -399,11 +400,11 @@ def table_khoi(khoi_chosen,year_chosen,tinh_chosen):
 )
 def line_mon(mon_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[~df_tinh[mon_chosen].isnull()]
-    if mon_chosen=='Van':
+    if mon_chosen=='Văn':
         list_output=[]
         for i in range(2020,2023):
             data = df1[df1['Year']==i]
@@ -470,7 +471,7 @@ def line_mon(mon_chosen,tinh_chosen):
 )
 def line_khoi(khoi_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df1=df[df['MaTinh']==tinh_dict[tinh_chosen]]
+        df1=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df1=df.copy()
     list_output=[]
