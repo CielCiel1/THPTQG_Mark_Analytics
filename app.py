@@ -9,7 +9,7 @@ import math
 df = pd.read_csv('data_full.csv')
 df = df[['SBD', 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD', 'MaTinh', 'Year']]
 df.columns =[ 'SBD','Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD','Mã Tỉnh','Year']
-tinh = pd.read_csv('Tỉnh_define_code.csv')
+tinh = pd.read_csv('Tinh.csv')
 diemchuan=pd.read_csv('diemchuan.csv')
 Khoi_dict = {"A00":['Toán', 'Lý', 'Hóa'],
              'B00':['Toán', 'Hóa','Sinh'],
@@ -19,7 +19,7 @@ Khoi_dict = {"A00":['Toán', 'Lý', 'Hóa'],
 To_hop_dict = {'KHTN':['Sinh', 'Lý', 'Hóa'],
                'KHXH':['Lịch sử', 'Địa lý', 'GDCD'],
                'both':['Sinh', 'Lý', 'Hóa','Lịch sử', 'Địa lý', 'GDCD']}
-tinh_dict = tinh.set_index('Tên').to_dict()['Mã']
+tinh_dict = tinh.set_index('TenTinh').to_dict()['MaTinh']
 
 dt = df[[ 'Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD','Year']].groupby('Year').agg('mean').round(2).reset_index()
 dt["Year"] = dt['Year'].astype(str)
@@ -50,7 +50,6 @@ app.layout = html.Div([
             html.H3(id='Tổng số sinh viên thi', style={'fontWeight': 'bold','text-align':'center'}),
             html.Label('Tổng số sinh viên thi', style={'paddingTop': '.3rem','text-align':'center'}),
         ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
-    
         html.Div(children=[
             html.H3(id='Tổng số sinh viên thi KHTN', style={'fontWeight': 'bold', 'color': '#f73600','text-align':'center'}),
             html.Label('Tổng số sinh viên thi KHTN', style={'paddingTop': '.3rem','text-align':'center'}),
@@ -81,7 +80,7 @@ app.layout = html.Div([
         html.Div(className='three columns', children=[
             html.Br(),
             html.Br(),
-            html.Label('Thống kê điểm trung bình qua các năm',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
+            html.Label('Thống kê điểm trung bình qua các năm của toàn quốc',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
             html.Br(),
             dash_table.DataTable(dt.to_dict('records'), [{"name": i, "id": i} for i in dt.columns]
                                 #  style_cell={'padding': '5px'},
@@ -169,7 +168,7 @@ app.layout = html.Div([
 )
 def text_value(year_chosen,tinh_chosen):
     if tinh_chosen !='Toàn Quốc':
-        df_tinh=df[df['Mã tin']==tinh_dict[tinh_chosen]]
+        df_tinh=df[df['Mã Tỉnh']==tinh_dict[tinh_chosen]]
     else:
         df_tinh=df.copy()
     df1 = df_tinh[df_tinh['Year']==year_chosen]
