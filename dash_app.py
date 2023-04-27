@@ -83,9 +83,9 @@ app.layout = html.Div([
             html.Br(),
             dash_table.DataTable(dt.to_dict('records'), [{"name": i, "id": i} for i in dt.columns],
                                 style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},
-                                style_cell_conditional=[{'if': {'column_id': 'Năm'},'textAlign': 'left','fontWeight': 'bold'}]
+                                style_cell_conditional=[{'if': {'column_id': 'Năm'},'textAlign': 'left','fontWeight': 'bold'}],
                                 #  style_cell={'padding': '5px'},
-                                #  style_data={ 'border': '1px solid blue' }
+                                style_data ={'font-size':'14px'}
                                  )
         ]),
         html.Div(className='eight columns', children=[
@@ -96,10 +96,10 @@ app.layout = html.Div([
     html.Div(children=[]),
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
-            dcc.Graph(figure={},id='ti_le_diem',style={"width": "100%","height": "100%"})
+            dcc.Graph(figure={},id='ti_le_diem',style={"width": "100%","height": "100%",'display': 'flex', 'justify-content': 'center','margin-left':'25%'})
         ]),
         html.Div(className='six columns', children=[
-            dcc.Graph(figure={}, id='mon_khong_thi-graph',style={"width": "100%","height": "100%"})
+            dcc.Graph(figure={}, id='mon_khong_thi-graph',style={"width": "100%","height": "100%",'display': 'flex', 'justify-content': 'center','margin-left':'25%'})
         ])
     ]),
     html.Div(className='row', children='PHÂN TÍCH PHỔ ĐIỂM',
@@ -113,7 +113,7 @@ app.layout = html.Div([
             
         ]),
         html.Div(className='six columns', children=[
-            dcc.Dropdown(options=['A00','B00','C00','D01','A01'],value='A00',  id='controls-khoi'),
+            dcc.Dropdown(options=[i for i in Khoi_dict.keys()],value='A00',  id='controls-khoi'),
             dcc.Graph(figure={}, id='khoi-graph'),
             dash_table.DataTable(page_size=10, id='tabel_khoi',style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},style_data ={'font-size':'14px'})
         ])
@@ -147,12 +147,15 @@ app.layout = html.Div([
             # html.I('* chỉ hiện thị điểm chuẩn nhỏ hơn hoặc bằng tổng điểm của bạn', style={'color':'red','font-size': '12px'})
         ]),
     html.Div(className='row', children=[
-        dcc.Input(id="Truong_cua_ban_b2", type="text", placeholder='Nhập trường bạn cần tìm', style={'width':'100%'}),
+        dcc.Input(id="Truong_cua_ban_b2", type="text", placeholder='Nhập trường bạn cần tìm', style={'width':'32%'}),
+        dcc.Input(id="controls-sosanh", type="number", placeholder='Nhập điểm chênh lệch so với điểm trung bình', style={'width':'25%'}),
+        dcc.Input(id="controls-khoitrungbinh", type="text", placeholder='Nhập khối thi của bạn', style={'width':'30%'}),
         html.Br(),
-        html.I('* hiện thị điểm chuẩn của các trường trong khoảng +-3 điểm so với điểm trung bình của Khối', style={'color':'#00aeef','font-size': '12px'}),
+        html.Label(id='chu thich',style={'color':'#00aeef','font-size': '12px'}),
+        # html.I('* hiện thị điểm chuẩn của các trường trong khoảng +-3 điểm so với điểm trung bình của Khối', style={'color':'#00aeef','font-size': '12px'}),
+        # html.Br(),
         html.Br(),
-        html.Br(),
-        html.Label('So sánh phổ điểm theo khối và điểm chuẩn của các trường Đại Học',style={'fontWeight': 'bold','fontSize':'17px'}),
+        html.Label('So sánh phổ điểm theo khối và điểm chuẩn của các trường Đại Học',style={'fontWeight': 'bold','text-align':'center','fontSize':'17px'}),
         dash_table.DataTable(style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},style_data={'whiteSpace': 'normal','height': 'auto',},
                                  page_size=10, id='table_trungbinh',style_cell={'fontSize': '14px'})
         ])
@@ -227,7 +230,7 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     fig_number_subject=px.pie(data_number_subject,values='counts',names='Số môn thi',title=f'<b>Tỉ lệ thi số môn năm {tinh_chosen} {year_chosen}<b>',template='none', color_discrete_sequence = custom_colors,
                               hole=0.4)
     fig_number_subject.update_layout(legend_title='<b>Tổng số môn thi<b>',font_family="Arial",
-                                  width=500, height=450,
+                                  width=500, 
                                   legend=dict(traceorder='normal',font=dict(size=12))
                                   )
     
@@ -384,41 +387,98 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     return total, KHTN, KHXH, both, less2,fig_subject, fig_number_subject, fig_range_block, fig_subject_bar, table_subject.to_dict('records'), fig_block_bar, table_block.to_dict('records'), fig_subject_line, fig_block_line
 
 #Statistics of benchmarks of universities
+
 @callback(
     Output(component_id='table_daihoc', component_property='data'),
-    Output(component_id='table_trungbinh', component_property='data'),
-
+    # Input(component_id='controls-year', component_property='value'),
     Input(component_id='Khoi_cua_ban_b1', component_property='value'),
     Input(component_id='Diem_cua_ban', component_property='value'),
-    Input(component_id='Truong_cua_ban_b1', component_property='value'),
-    Input(component_id='controls-khoi', component_property='value'),
+    Input(component_id='Truong_cua_ban_b1', component_property='value')
+)
+def table_diemdaihoc(khoi_chosen,diem_cua_ban,truong_cua_ban):
+    output = diemchuan[diemchuan['Điểm chuẩn']<=diem_cua_ban]
+    if khoi_chosen!=None:
+        output = output[output['Tổ hợp môn'].str.contains(khoi_chosen)]
+    if truong_cua_ban!=None:
+        output = output[output['Tên trường'].str.lower().str.contains(truong_cua_ban.lower())]
+    output = output.sort_values('Điểm chuẩn',ascending=False)
+    return output.to_dict('records')
+
+@callback(
+    Output(component_id='table_trungbinh', component_property='data'),
+    Output(component_id='chu thich', component_property='children'),
+    # Input(component_id='controls-year', component_property='value'),
+    Input(component_id ='controls-sosanh',component_property ='value'),
+    Input(component_id='controls-khoitrungbinh', component_property='value'),
     Input(component_id='Truong_cua_ban_b2', component_property='value')
 )
-
-def table_universities(khoi_chosen,diem_cua_ban,truong_cua_ban,khoi_chosen2, truong_cua_ban2):
-    #Table lower or equal than your score
-    table_univer = diemchuan[diemchuan['Điểm chuẩn']<=diem_cua_ban]
-    if khoi_chosen!=None:
-        table_univer = table_univer[table_univer['Tổ hợp môn'].str.contains(khoi_chosen)]
-    if truong_cua_ban!=None:
-        table_univer = table_univer[table_univer['Tên trường'].str.lower().str.contains(truong_cua_ban.lower())]
-    table_univer = table_univer.sort_values('Điểm chuẩn',ascending=False)
-
-    #Table lower or equal than avg score 3
+def table_diemtrungbinh(sosanh,khoi_chosen,truong_cua_ban):
+    try:
+        if khoi_chosen!=None:
+            khoi_chosen = khoi_chosen
+        else:
+            khoi_chosen = 'A00'
+    except Exception as e:
+        print(e)
+        khoi_chosen = 'A00'
     if khoi_chosen in Khoi_dict.keys():
-        table_univer_avg = df[~df[Khoi_dict[khoi_chosen2]].isnull().any(axis=1)][Khoi_dict[khoi_chosen2]]
-        table_univer_avg['Diem'] = table_univer_avg.sum(axis=1).round()
+        data = df[~df[Khoi_dict[khoi_chosen]].isnull().any(axis=1)][Khoi_dict[khoi_chosen]]
+        data['Diem'] = data.sum(axis=1).round()
     else:
-        table_univer_avg = df[~df[Khoi_dict['A00']].isnull().any(axis=1)][Khoi_dict['A00']]
-        table_univer_avg['Diem'] = table_univer_avg.sum(axis=1).round()
-    diem_cua_ban= table_univer_avg['Diem'].mean()
-    diem_cua_ban_ab=diem_cua_ban+3
-    diem_cua_ban_bl=diem_cua_ban-3
-    output_table_univer_avg = diemchuan[(diemchuan['Điểm chuẩn']<=diem_cua_ban_ab)&(diemchuan['Điểm chuẩn']>=diem_cua_ban_bl)]
+        data = df[~df[Khoi_dict['A00']].isnull().any(axis=1)][Khoi_dict['A00']]
+        data['Diem'] = data.sum(axis=1).round()
+    try:
+        if sosanh!=None:
+            sosanh = sosanh
+        else:
+            sosanh = 3
+    except Exception as e:
+        print(e)
+        sosanh = 3
+    diem_cua_ban= data['Diem'].mean()
+    diem_cua_ban_ab=diem_cua_ban + sosanh
+    diem_cua_ban_bl=diem_cua_ban - sosanh
+    output = diemchuan[(diemchuan['Điểm chuẩn']<=diem_cua_ban_ab)&(diemchuan['Điểm chuẩn']>=diem_cua_ban_bl)]
     if truong_cua_ban!=None:
-        output_table_univer_avg = output_table_univer_avg[output_table_univer_avg['Tên trường'].str.lower().str.contains(truong_cua_ban2.lower())]
-    output_table_univer_avg = output_table_univer_avg.sort_values('Điểm chuẩn',ascending=False)
-    return table_univer.to_dict('records'), output_table_univer_avg.to_dict('records')
-# Run the app
+        output = output[output['Tên trường'].str.lower().str.contains(truong_cua_ban.lower())]
+    output = output.sort_values('Điểm chuẩn',ascending=False)
+    chu_thich = f'* Điểm trung bình của khối {khoi_chosen} năm 2022 là {round(diem_cua_ban,2)},(lưu ý khối A sẽ nhập A00, khối B : B00)'
+    return output.to_dict('records'),chu_thich
+# @callback(
+#     Output(component_id='table_daihoc', component_property='data'),
+#     Output(component_id='table_trungbinh', component_property='data'),
+
+#     Input(component_id='Khoi_cua_ban_b1', component_property='value'),
+#     Input(component_id='Diem_cua_ban', component_property='value'),
+#     Input(component_id='Truong_cua_ban_b1', component_property='value'),
+#     Input(component_id='controls-khoi', component_property='value'),
+#     Input(component_id='Truong_cua_ban_b2', component_property='value')
+# )
+
+# def table_universities(khoi_chosen,diem_cua_ban,truong_cua_ban,khoi_chosen2, truong_cua_ban2):
+#     #Table lower or equal than your score
+#     table_univer = diemchuan[diemchuan['Điểm chuẩn']<=diem_cua_ban]
+#     if khoi_chosen!=None:
+#         table_univer = table_univer[table_univer['Tổ hợp môn'].str.contains(khoi_chosen)]
+#     if truong_cua_ban!=None:
+#         table_univer = table_univer[table_univer['Tên trường'].str.lower().str.contains(truong_cua_ban.lower())]
+#     table_univer = table_univer.sort_values('Điểm chuẩn',ascending=False)
+
+#     #Table lower or equal than avg score 3
+#     if khoi_chosen in Khoi_dict.keys():
+#         table_univer_avg = df[~df[Khoi_dict[khoi_chosen2]].isnull().any(axis=1)][Khoi_dict[khoi_chosen2]]
+#         table_univer_avg['Diem'] = table_univer_avg.sum(axis=1).round()
+#     else:
+#         table_univer_avg = df[~df[Khoi_dict['A00']].isnull().any(axis=1)][Khoi_dict['A00']]
+#         table_univer_avg['Diem'] = table_univer_avg.sum(axis=1).round()
+#     diem_cua_ban= table_univer_avg['Diem'].mean()
+#     diem_cua_ban_ab=diem_cua_ban+3
+#     diem_cua_ban_bl=diem_cua_ban-3
+#     output_table_univer_avg = diemchuan[(diemchuan['Điểm chuẩn']<=diem_cua_ban_ab)&(diemchuan['Điểm chuẩn']>=diem_cua_ban_bl)]
+#     if truong_cua_ban!=None:
+#         output_table_univer_avg = output_table_univer_avg[output_table_univer_avg['Tên trường'].str.lower().str.contains(truong_cua_ban2.lower())]
+#     output_table_univer_avg = output_table_univer_avg.sort_values('Điểm chuẩn',ascending=False)
+#     return table_univer.to_dict('records'), output_table_univer_avg.to_dict('records')
+# # Run the app
 if __name__ == '__main__': 
     app.run_server(debug=True)
