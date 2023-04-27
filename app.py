@@ -289,12 +289,6 @@ def update_graph_mon(mon_chosen,year_chosen,tinh_chosen):
     fig.update_traces(
     textposition='inside',textfont=dict(
         size=100),textangle = 90)
-    # annotations = []
-    # for country, population in zip(data_output["Diem"], data_output["counts"]):
-    #     annotations.append(dict(xref='Diem', yref='Diem', x=population+3, y=country,
-    #                             text='{:,}'.format(population), font=dict(size=12),
-    #                             showarrow=False))
-    # fig.update_layout(annotations=annotations)
     fig.update_yaxes(title = 'Tổng số sinh viên')
     return fig
 
@@ -550,9 +544,6 @@ def table_diemtrungbinh(year_chosen,khoi_chosen,truong_cua_ban):
 
 # Run the app
 if __name__ == '__main__':
-    # installed_packages = pkg_resources.working_set
-    # installed_packages_list = sorted(["%s==%s" % (i.key, i.version) for i in installed_packages])
-    # print(installed_packages_list)  
     app.run_server(debug=True)
 
 # import pkg_resources
