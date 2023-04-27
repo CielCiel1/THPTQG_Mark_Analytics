@@ -93,15 +93,13 @@ app.layout = html.Div([
             
         ])
     ]),
-
+    html.Div(children=[]),
     html.Div(className='row', children=[
-        html.Div(className = 'one clomuns',children=[]),
-        html.Div(className = 'one clomuns',children=[]),
-        html.Div(className='four columns', children=[
-            dcc.Graph(figure={},id='ti_le_diem',style={"width": "100%","height": "100%","align" : "center"})
+        html.Div(className='six columns', children=[
+            dcc.Graph(figure={},id='ti_le_diem',style={"width": "100%","height": "100%",'display': 'flex', 'justify-content': 'center','margin-left':'30%'})
         ]),
-        html.Div(className='five columns', children=[
-            dcc.Graph(figure={}, id='mon_khong_thi-graph',style={"width": "100%","height": "100%","align" : "center"})
+        html.Div(className='six columns', children=[
+            dcc.Graph(figure={}, id='mon_khong_thi-graph',style={"width": "100%","height": "100%",'display': 'flex', 'justify-content': 'center','margin-left':'30%'})
         ])
     ]),
     html.Div(className='row', children='PHÂN TÍCH PHỔ ĐIỂM',
@@ -111,13 +109,13 @@ app.layout = html.Div([
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=[ 'Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD'],value='Toán',  id='controls-mon'),
             dcc.Graph(figure={}, id='mon-graph'),
-            dash_table.DataTable(page_size=10, id='tabel_mon',style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'})
+            dash_table.DataTable(page_size=10, id='tabel_mon',style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},style_data ={'font-size':'14px'})
             
         ]),
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['A00','B00','C00','D01','A01'],value='A00',  id='controls-khoi'),
             dcc.Graph(figure={}, id='khoi-graph'),
-            dash_table.DataTable(page_size=10, id='tabel_khoi',style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},)
+            dash_table.DataTable(page_size=10, id='tabel_khoi',style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},style_data ={'font-size':'14px'})
         ])
     ]),
 
@@ -144,18 +142,19 @@ app.layout = html.Div([
             html.Br(),
             html.Br(),
             html.Label('Tìm kiếm điểm chuẩn',style={'fontWeight': 'bold','text-align':'center','fontSize':'17px'}),
-            dash_table.DataTable(style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},style_data={'whiteSpace': 'normal','height': 'auto',},page_size=10, id='table_daihoc')
+            dash_table.DataTable(style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},style_data={'whiteSpace': 'normal','height': 'auto',},page_size=10,
+                                 id='table_daihoc',style_cell={'fontSize': '14px'})
             # html.I('* chỉ hiện thị điểm chuẩn nhỏ hơn hoặc bằng tổng điểm của bạn', style={'color':'red','font-size': '12px'})
         ]),
-        html.Div(className='columns', children=[
-            dcc.Input(id="Truong_cua_ban_b2", type="text", placeholder='Nhập trường bạn cần tìm', style={'marginRight':'10px','width':'100%'}),
-            # dcc.Input(id="Khoi_cua_ban_b2", type="text", placeholder='Nhập khối của bạn', style={'marginRight':'10px','width':'48%'}),
-            html.Br(),
-            html.I('* hiện thị điểm chuẩn của các trường trong khoảng +-3 điểm so với điểm trung bình của Khối', style={'color':'#00aeef','font-size': '12px'}),
-            html.Br(),
-            html.Br(),
-            html.Label('So sánh phổ điểm theo khối và điểm chuẩn của các trường Đại Học',style={'fontWeight': 'bold','text-align':'center','fontSize':'17px'}),
-            dash_table.DataTable(style_data={'whiteSpace': 'normal','height': 'auto',},page_size=10, id='table_trungbinh')
+    html.Div(className='row', children=[
+        dcc.Input(id="Truong_cua_ban_b2", type="text", placeholder='Nhập trường bạn cần tìm', style={'width':'100%'}),
+        html.Br(),
+        html.I('* hiện thị điểm chuẩn của các trường trong khoảng +-3 điểm so với điểm trung bình của Khối', style={'color':'#00aeef','font-size': '12px'}),
+        html.Br(),
+        html.Br(),
+        html.Label('So sánh phổ điểm theo khối và điểm chuẩn của các trường Đại Học',style={'fontWeight': 'bold','fontSize':'17px'}),
+        dash_table.DataTable(style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},style_data={'whiteSpace': 'normal','height': 'auto',},
+                                 page_size=10, id='table_trungbinh',style_cell={'fontSize': '14px'})
         ])
     ])
 ])
@@ -225,9 +224,10 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     data_number_subject= 9-df1.isnull().sum(axis=1)
     data_number_subject = data_number_subject.value_counts().reset_index()
     data_number_subject.columns=['Số môn thi','counts']
-    fig_number_subject=px.pie(data_number_subject,values='counts',names='Số môn thi',title=f'<b>Tỉ lệ thi số môn năm {tinh_chosen} {year_chosen}<b>',template='none', color_discrete_sequence = custom_colors)
+    fig_number_subject=px.pie(data_number_subject,values='counts',names='Số môn thi',title=f'<b>Tỉ lệ thi số môn năm {tinh_chosen} {year_chosen}<b>',template='none', color_discrete_sequence = custom_colors,
+                              hole=0.4)
     fig_number_subject.update_layout(legend_title='<b>Tổng số môn thi<b>',font_family="Arial",
-                                  width=500, height=450,
+                                  width=500, 
                                   legend=dict(traceorder='normal',font=dict(size=12))
                                   )
     
@@ -241,7 +241,7 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
                                                              '27-30'))))
     data_range_block = data_khoi['Range_Điểm'].value_counts().reset_index()
     data_range_block.columns = ['Diem', 'counts']
-    fig_range_block = px.pie(data_range_block, values='counts', names='Diem', title=f"<b>Tỉ lệ điểm theo khối {khoi_chosen}<b>" ,template='none', color_discrete_sequence = custom_colors)
+    fig_range_block = px.pie(data_range_block, values='counts', names='Diem', title=f"<b>Tỉ lệ điểm theo khối {khoi_chosen}<b>" ,template='none', color_discrete_sequence = custom_colors,hole=0.4)
     fig_range_block.update_layout(legend_title='<b>Tổng điểm khối thi<b>',font_family="Arial",width=500,
                                   legend=dict(traceorder='normal',font=dict(size=12))
                                   )
@@ -283,7 +283,6 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
                                         f'{round(((data_mon[data_mon[mon_chosen]<5].shape[0]/data_mon.shape[0])*100),2)}%',
                                         f'{round(((data_mon[data_mon[mon_chosen]>9].shape[0]/data_mon.shape[0])*100),2)}%',
                                      '']})
-
     #Figure block bar
     data_block = data_khoi.Diem.value_counts().reset_index()
     data_block.columns = ['Diem', 'counts']
