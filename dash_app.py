@@ -314,6 +314,8 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     list_output=[]
     for i in range(2020,2023):
         data = df[df['Year']==i]
+        if mon_chosen=='Văn':
+            data= (data[mon_chosen]*4).round()/4
         data_subject_line= data[mon_chosen].value_counts().reset_index()
         data_subject_line.columns = ['Diem', 'counts']
         data_subject_line = data_subject_line.sort_values(by="Diem", ascending=True)
