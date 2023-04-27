@@ -5,7 +5,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-df = pd.read_csv('data_full.csv')
+df = pd.read_csv('diem.csv')
 df = df[['SBD', 'Toan', 'Van', 'Ngoai ngu', 'Ly', 'Hoa', 'Sinh', 'Lich su','Dia ly', 'GDCD', 'MaTinh', 'Year']]
 df.columns =[ 'SBD','Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD','Mã Tỉnh','Year']
 tinh = pd.read_csv('Tinh.csv')
@@ -24,48 +24,49 @@ dt = df[[ 'Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử'
 dt["Year"] = dt['Year'].astype(str)
 dt = dt.T.reset_index()
 dt.columns = dt.iloc[0]
+dt=dt.rename(columns={'Year':'Năm'})
 dt = dt[1:]
 
 # Initialize the app - incorporate css
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-custom_colors = ['#1B72C9', '#E65DE2', '#900C3F', '#581845']
+custom_colors = [ '#2C74B3','#19A7CE', '#82AAE3', '#91D8E4','#BFEAF5','#DFF6FF','#EAFDFC']
 
 # Initialize the app
 app = Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
-    html.Div(className='row', children='Phân tích điểm thi THPT Quốc gia',
-             style={'textAlign': 'center', 'color': 'red', 'fontSize': 35}),
+    html.Div(className='row', children='PHÂN TÍCH ĐIỂM THI THPT QUỐC GIA',
+             style={'fontWeight': 'bold','textAlign': 'center', 'color': '#00aeef', 'fontSize': 35,'fontWeight': 'bold'}),
     
     html.Div(className='row', children=[
         dcc.Dropdown(options=[i for i in tinh_dict.keys()],value='Toàn Quốc',  id='controls-tinh', style={'marginRight':'10px','width':'100%'}),
         dcc.Dropdown(options=[i for i in range(2017,2023)],value=2022,  id='controls-year', style={'marginRight':'10px','width':'100%'})
     ]),
-    html.Div(className='row', children='Phân tích tổng quan',
-             style={'textAlign': 'center', 'color': 'blue', 'fontSize': 25}),
+    html.Div(className='row', children='PHÂN TÍCH TỔNG QUAN',
+             style={'fontWeight': 'bold','textAlign': 'center', 'color': '#00aeef', 'fontSize': 25}),
     html.Div(className='row', children=[
         html.Div(children=[
             html.H3(id='Tổng số sinh viên thi', style={'fontWeight': 'bold','text-align':'center'}),
             html.Label('Tổng số sinh viên thi', style={'paddingTop': '.3rem','text-align':'center'}),
         ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
         html.Div(children=[
-            html.H3(id='Tổng số sinh viên thi KHTN', style={'fontWeight': 'bold', 'color': '#f73600','text-align':'center'}),
+            html.H3(id='Tổng số sinh viên thi KHTN', style={'fontWeight': 'bold','text-align':'center'}),
             html.Label('Tổng số sinh viên thi KHTN', style={'paddingTop': '.3rem','text-align':'center'}),
         ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
 
         html.Div(children=[
-            html.H3(id='Tổng số sinh viên thi KHXH', style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
+            html.H3(id='Tổng số sinh viên thi KHXH', style={'fontWeight': 'bold','text-align':'center'}),
             html.Label('Tổng số sinh viên thi KHXH', style={'paddingTop': '.3rem','text-align':'center'}),
         ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
 
         html.Div(children=[
-            html.H3(id='Tổng số sinh viên thi KHTN+KHXH', style={'fontWeight': 'bold', 'color': '#006600','text-align':'center'}),
+            html.H3(id='Tổng số sinh viên thi KHTN+KHXH', style={'fontWeight': 'bold','text-align':'center'}),
             html.Label('Tổng số sinh viên thi KHTN + KHXH', style={'paddingTop': '.3rem','text-align':'center'}),
         
         ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),   
 
         html.Div(children=[
-            html.H3(id='Tổng số sinh viên thi ít hơn 3 môn', style={'fontWeight': 'bold', 'color': '#660033','text-align':'center'}),
+            html.H3(id='Tổng số sinh viên thi ít hơn 3 môn', style={'fontWeight': 'bold','text-align':'center'}),
             html.Label('Tổng số sinh viên thi ít hơn 3 môn', style={'paddingTop': '.3rem','text-align':'center'}),
         
         ], className="two columns number-stat-box",style={'background-color':'#CCE5FF'}),
@@ -78,41 +79,45 @@ app.layout = html.Div([
         html.Div(className='three columns', children=[
             html.Br(),
             html.Br(),
-            html.Label('Thống kê điểm trung bình qua các năm của toàn quốc',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
+            html.Label('Thống kê điểm trung bình qua các năm toàn quốc',style={'fontWeight': 'bold','text-align':'center','fontSize':'17px'}),
             html.Br(),
-            dash_table.DataTable(dt.to_dict('records'), [{"name": i, "id": i} for i in dt.columns]
+            dash_table.DataTable(dt.to_dict('records'), [{"name": i, "id": i} for i in dt.columns],
+                                style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},
+                                style_cell_conditional=[{'if': {'column_id': 'Năm'},'textAlign': 'left','fontWeight': 'bold'}]
                                 #  style_cell={'padding': '5px'},
                                 #  style_data={ 'border': '1px solid blue' }
                                  )
         ]),
         html.Div(className='eight columns', children=[
-            dcc.Graph(figure={}, id='mon_thi-graph')
+            dcc.Graph(figure={}, id='mon_thi-graph',style={"width": "100%","height": "100%","align" : "center"})
             
         ])
     ]),
 
     html.Div(className='row', children=[
-        html.Div(className='six columns', children=[
-            dcc.Graph(figure={},id='ti_le_diem')
+        html.Div(className = 'one clomuns',children=[]),
+        html.Div(className = 'one clomuns',children=[]),
+        html.Div(className='four columns', children=[
+            dcc.Graph(figure={},id='ti_le_diem',style={"width": "100%","height": "100%","align" : "center"})
         ]),
-        html.Div(className='three columns', children=[
-            dcc.Graph(figure={}, id='mon_khong_thi-graph')
+        html.Div(className='five columns', children=[
+            dcc.Graph(figure={}, id='mon_khong_thi-graph',style={"width": "100%","height": "100%","align" : "center"})
         ])
     ]),
-    html.Div(className='row', children='Phân tích phổ điểm',
-             style={'textAlign': 'center', 'color': 'blue', 'fontSize': 25}),
+    html.Div(className='row', children='PHÂN TÍCH PHỔ ĐIỂM',
+             style={'fontWeight': 'bold','textAlign': 'center', 'color': '#00aeef', 'fontSize': 25}),
     html.Br(),
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=[ 'Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD'],value='Toán',  id='controls-mon'),
             dcc.Graph(figure={}, id='mon-graph'),
-            dash_table.DataTable(page_size=10, id='tabel_mon')
+            dash_table.DataTable(page_size=10, id='tabel_mon',style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'})
             
         ]),
         html.Div(className='six columns', children=[
             dcc.Dropdown(options=['A00','B00','C00','D01','A01'],value='A00',  id='controls-khoi'),
             dcc.Graph(figure={}, id='khoi-graph'),
-            dash_table.DataTable(page_size=10, id='tabel_khoi')
+            dash_table.DataTable(page_size=10, id='tabel_khoi',style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},)
         ])
     ]),
 
@@ -125,31 +130,31 @@ app.layout = html.Div([
             dcc.Graph(figure={}, id='khoi_line-graph')
         ])
     ]),
-    html.Div(className='row', children='Thống kê điểm chuẩn các trường Đại học',
-             style={'textAlign': 'center', 'color': 'blue', 'fontSize': 25}),
+    html.Div(className='row', children='THỐNG KÊ ĐIỂM CHUẨN CÁC TRƯỜNG ĐẠI HỌC',
+             style={'fontWeight': 'bold','textAlign': 'center', 'color': '#00aeef', 'fontSize': 25}),
     html.Br(),
     html.Div(className='row', children=[
-        html.Div(className='six columns', children=[
+        html.Div(className='columns', children=[
             html.I('Nhập tổng điểm của bạn:'),
             dcc.Input(id="Diem_cua_ban", type="number", placeholder='Nhập điểm của bạn',value=24, style={'marginRight':'10px','width':'10%'}),
             dcc.Input(id="Truong_cua_ban_b1", type="text", placeholder='Nhập trường bạn cần tìm', style={'marginRight':'10px','width':'32%'}),
             dcc.Input(id="Khoi_cua_ban_b1", type="text", placeholder='Nhập khối của bạn', style={'marginRight':'10px','width':'32%'}),
             html.Br(),
-            html.I('* chỉ hiện thị điểm chuẩn nhỏ hơn hoặc bằng tổng điểm của bạn,(lưu ý khối A sẽ nhập A00, khối B : B00,.. )', style={'color':'red','font-size': '12px'}),
+            html.I('* chỉ hiện thị điểm chuẩn nhỏ hơn hoặc bằng tổng điểm của bạn,(lưu ý khối A sẽ nhập A00, khối B : B00,.. )', style={'color':'#00aeef','font-size': '12px'}),
             html.Br(),
             html.Br(),
-            html.Label('Tìm kiếm điểm chuẩn',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
-            dash_table.DataTable(style_data={'whiteSpace': 'normal','height': 'auto',},page_size=10, id='table_daihoc')
+            html.Label('Tìm kiếm điểm chuẩn',style={'fontWeight': 'bold','text-align':'center','fontSize':'17px'}),
+            dash_table.DataTable(style_header={'backgroundColor': '#CCE5FF','color': 'black','fontWeight': 'bold'},style_data={'whiteSpace': 'normal','height': 'auto',},page_size=10, id='table_daihoc')
             # html.I('* chỉ hiện thị điểm chuẩn nhỏ hơn hoặc bằng tổng điểm của bạn', style={'color':'red','font-size': '12px'})
         ]),
-        html.Div(className='six columns', children=[
+        html.Div(className='columns', children=[
             dcc.Input(id="Truong_cua_ban_b2", type="text", placeholder='Nhập trường bạn cần tìm', style={'marginRight':'10px','width':'100%'}),
             # dcc.Input(id="Khoi_cua_ban_b2", type="text", placeholder='Nhập khối của bạn', style={'marginRight':'10px','width':'48%'}),
             html.Br(),
-            html.I('* hiện thị điểm chuẩn của các trường trong khoảng +-3 điểm so với điểm trung bình của Khối', style={'color':'red','font-size': '12px'}),
+            html.I('* hiện thị điểm chuẩn của các trường trong khoảng +-3 điểm so với điểm trung bình của Khối', style={'color':'#00aeef','font-size': '12px'}),
             html.Br(),
             html.Br(),
-            html.Label('So sánh phổ điểm theo khối và điểm chuẩn của các trường Đại Học',style={'fontWeight': 'bold', 'color': '#00aeef','text-align':'center'}),
+            html.Label('So sánh phổ điểm theo khối và điểm chuẩn của các trường Đại Học',style={'fontWeight': 'bold','text-align':'center','fontSize':'17px'}),
             dash_table.DataTable(style_data={'whiteSpace': 'normal','height': 'auto',},page_size=10, id='table_trungbinh')
         ])
     ])
@@ -209,19 +214,19 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     data_figire_subject= df1[[ 'Toán', 'Văn', 'Ngoại ngữ', 'Lý', 'Hóa', 'Sinh', 'Lịch sử','Địa lý', 'GDCD']].isnull().sum().reset_index()
     data_figire_subject.columns=['Môn','counts']
     data_figire_subject['counts']=df1.shape[0]-data_figire_subject['counts']
-    fig_subject=px.bar(data_figire_subject,x='counts',y='Môn',title=f'Số thí sinh thi các môn {tinh_chosen} {year_chosen}', orientation='h',template='none')
-    fig_subject.update_layout(
+    fig_subject=px.bar(data_figire_subject,x='counts',y='Môn',title=f'<b>Số thí sinh thi các môn {tinh_chosen} {year_chosen}<b>', orientation='h',template='none')
+    fig_subject.update_layout(font_family="Arial",
     yaxis=dict(categoryorder='total ascending'))
     fig_subject.update_traces(textposition='inside',textfont=dict(size=10))
-    fig_subject.update_yaxes(title = 'Môn thi')
-    fig_subject.update_xaxes(title = 'Tổng số sinh viên thi')
+    fig_subject.update_yaxes(title = '<b>Môn thi<b>')
+    fig_subject.update_xaxes(title = '<b>Tổng số sinh viên thi<b>')
 
     #Figure number subject
     data_number_subject= 9-df1.isnull().sum(axis=1)
     data_number_subject = data_number_subject.value_counts().reset_index()
     data_number_subject.columns=['Số môn thi','counts']
-    fig_number_subject=px.pie(data_number_subject,values='counts',names='Số môn thi',title=f'Tỉ lệ thi số môn năm {tinh_chosen} {year_chosen}',template='none', color_discrete_sequence = custom_colors)
-    fig_number_subject.update_layout(legend_title='Tổng số môn thi',
+    fig_number_subject=px.pie(data_number_subject,values='counts',names='Số môn thi',title=f'<b>Tỉ lệ thi số môn năm {tinh_chosen} {year_chosen}<b>',template='none', color_discrete_sequence = custom_colors)
+    fig_number_subject.update_layout(legend_title='<b>Tổng số môn thi<b>',font_family="Arial",
                                   width=500, height=450,
                                   legend=dict(traceorder='normal',font=dict(size=12))
                                   )
@@ -236,8 +241,8 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
                                                              '27-30'))))
     data_range_block = data_khoi['Range_Điểm'].value_counts().reset_index()
     data_range_block.columns = ['Diem', 'counts']
-    fig_range_block = px.pie(data_range_block, values='counts', names='Diem', title=f"Tỉ lệ điểm theo khối {khoi_chosen}" ,template='none', color_discrete_sequence = custom_colors)
-    fig_range_block.update_layout(legend_title='Tổng điểm khối thi',#width=500,
+    fig_range_block = px.pie(data_range_block, values='counts', names='Diem', title=f"<b>Tỉ lệ điểm theo khối {khoi_chosen}<b>" ,template='none', color_discrete_sequence = custom_colors)
+    fig_range_block.update_layout(legend_title='<b>Tổng điểm khối thi<b>',font_family="Arial",width=500,
                                   legend=dict(traceorder='normal',font=dict(size=12))
                                   )
     
@@ -250,13 +255,14 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     else:
         data_subject= data_mon[mon_chosen].value_counts().reset_index()
         data_subject.columns = ['Diem', 'counts']
-    fig_subject_bar = px.bar(data_subject, x='Diem', y='counts', title=f"Phổ điểm theo môn {mon_chosen}",text_auto=True,template='none')
-    fig_subject_bar.update_layout(width=1000, height=500)
-    fig_subject_bar.update_xaxes(tickvals = data_subject['Diem'].unique(),tickangle=90,title = 'Điểm')
+    fig_subject_bar = px.bar(data_subject, x='Diem', y='counts', title=f"<b>Phổ điểm theo môn {mon_chosen}<b>",text_auto=True,template='none')
+    fig_subject_bar.update_layout(font_family="Arial",#width=1000, height=500
+                                  )
+    fig_subject_bar.update_xaxes(tickvals = data_subject['Diem'].unique(),tickangle=90,title = '<b>Điểm<b>')
     fig_subject_bar.update_traces(
     textposition='inside',textfont=dict(
         size=100),textangle = 90)
-    fig_subject_bar.update_yaxes(title = 'Tổng số sinh viên')
+    fig_subject_bar.update_yaxes(title = '<b>Tổng số sinh viên<b>')
 
     #Table subject
     table_subject = pd.DataFrame({"Thống kê":['Tổng số thí sinh',
@@ -281,13 +287,14 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     #Figure block bar
     data_block = data_khoi.Diem.value_counts().reset_index()
     data_block.columns = ['Diem', 'counts']
-    fig_block_bar = px.bar(data_block, x='Diem', y='counts', title=f"Phổ điểm theo khối {khoi_chosen}",text_auto=True,template='none')
-    fig_block_bar.update_layout(width=1000, height=500)
-    fig_block_bar.update_xaxes(tickvals = data_block['Diem'].unique(), title = 'Điểm')
+    fig_block_bar = px.bar(data_block, x='Diem', y='counts', title=f"<b>Phổ điểm theo khối {khoi_chosen}<b>",text_auto=True,template='none')
+    fig_block_bar.update_layout(font_family="Arial",#width=1000, height=500
+                                )
+    fig_block_bar.update_xaxes(tickvals = data_block['Diem'].unique(), title = '<b>Điểm<b>')
     fig_block_bar.update_traces(
     textposition='inside',textfont=dict(
         size=10))
-    fig_block_bar.update_yaxes(title = 'Tổng số sinh viên')
+    fig_block_bar.update_yaxes(title = '<b>Tổng số sinh viên<b>')
 
     #Table block
     table_block = pd.DataFrame({"Thống kê":['Tổng số thí sinh',
@@ -332,15 +339,16 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     fig_subject_line.add_trace(go.Scatter(x=data_subject_line[data_subject_line['Year']==2022]['Diem'], y=data_subject_line[data_subject_line['Year']==2022]['counts'],
                 mode='lines',
                 name='2022'))
-    fig_subject_line.update_layout(width=1000, height=500,template='none',title="So sánh phổ điểm của 3 năm gần nhất môn"
+    fig_subject_line.update_layout(font_family="Arial",#width=1000, height=500,
+                                   template='none',title="<b>So sánh phổ điểm của 3 năm gần nhất môn<b>"
     )
-    fig_subject_line.update_xaxes(tickvals = data_subject_line['Diem'].unique(),tickangle=90,title = 'Điểm')
+    fig_subject_line.update_xaxes(tickvals = data_subject_line['Diem'].unique(),tickangle=90,title = '<b>Điểm<b>')
     fig_subject_line.update_layout(
     legend=dict(
     orientation="h",
     yanchor="top",y=1.1)
     )
-    fig_subject_line.update_yaxes(title = 'Tổng số sinh viên')
+    fig_subject_line.update_yaxes(title = '<b>Tổng số sinh viên<b>')
 
     #Figure block line
     list_output=[]
@@ -365,14 +373,15 @@ def define_value(year_chosen,tinh_chosen,khoi_chosen,mon_chosen):
     fig_block_line.add_trace(go.Scatter(x=data_block_line[data_block_line['Year']==2022]['Diem'], y=data_block_line[data_block_line['Year']==2022]['counts'],
                 mode='lines',
                 name='2022',line_shape='spline'))
-    fig_block_line.update_layout(width=980, height=500,template='none',title='So sánh phổ điểm của 3 năm gần nhất theo Khối')
-    fig_block_line.update_xaxes(tickvals = data_block_line['Diem'].unique(),title = 'Điểm')
+    fig_block_line.update_layout(font_family="Arial",#width=980, height=500,
+                                 template='none',title='<b>So sánh phổ điểm của 3 năm gần nhất theo Khối<b>')
+    fig_block_line.update_xaxes(tickvals = data_block_line['Diem'].unique(),title = '<b>Điểm<b>')
     fig_block_line.update_layout(
         legend=dict(
         orientation="h",
         yanchor="top",y=1.1)
         )
-    fig_block_line.update_yaxes(title = 'Tổng số sinh viên')
+    fig_block_line.update_yaxes(title = '<b>Tổng số sinh viên<b>')
     return total, KHTN, KHXH, both, less2,fig_subject, fig_number_subject, fig_range_block, fig_subject_bar, table_subject.to_dict('records'), fig_block_bar, table_block.to_dict('records'), fig_subject_line, fig_block_line
 
 #Statistics of benchmarks of universities
