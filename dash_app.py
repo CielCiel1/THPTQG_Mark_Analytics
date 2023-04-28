@@ -148,7 +148,7 @@ app.layout = html.Div([
         ]),
     html.Div(className='row', children=[
         dcc.Input(id="Truong_cua_ban_b2", type="text", placeholder='Nhập trường bạn cần tìm', style={'width':'32%'}),
-        dcc.Input(id="controls-sosanh", type="number", placeholder='Nhập điểm chênh lệch so với điểm trung bình', style={'width':'25%'}),
+        dcc.Input(id="controls-sosanh", type="number", placeholder='Nhập số điểm chênh lệch so với điểm trung bình', style={'width':'25%'}),
         dcc.Input(id="controls-khoitrungbinh", type="text", placeholder='Nhập khối thi của bạn', style={'width':'30%'}),
         html.Br(),
         html.Label(id='chu thich',style={'color':'#00aeef','font-size': '12px'}),
@@ -441,44 +441,8 @@ def table_diemtrungbinh(sosanh,khoi_chosen,truong_cua_ban):
     output = diemchuan[(diemchuan['Điểm chuẩn']<=diem_cua_ban_ab)&(diemchuan['Điểm chuẩn']>=diem_cua_ban_bl)]
     if truong_cua_ban!=None:
         output = output[output['Tên trường'].str.lower().str.contains(truong_cua_ban.lower())]
-    output = output.sort_values('Điểm chuẩn',ascending=False)
+    output = output.sort_values('Điểm chuẩn',ascending=True)
     chu_thich = f'* Điểm trung bình của khối {khoi_chosen} năm 2022 là {round(diem_cua_ban,2)},(lưu ý khối A sẽ nhập A00, khối B : B00)'
     return output.to_dict('records'),chu_thich
-# @callback(
-#     Output(component_id='table_daihoc', component_property='data'),
-#     Output(component_id='table_trungbinh', component_property='data'),
-
-#     Input(component_id='Khoi_cua_ban_b1', component_property='value'),
-#     Input(component_id='Diem_cua_ban', component_property='value'),
-#     Input(component_id='Truong_cua_ban_b1', component_property='value'),
-#     Input(component_id='controls-khoi', component_property='value'),
-#     Input(component_id='Truong_cua_ban_b2', component_property='value')
-# )
-
-# def table_universities(khoi_chosen,diem_cua_ban,truong_cua_ban,khoi_chosen2, truong_cua_ban2):
-#     #Table lower or equal than your score
-#     table_univer = diemchuan[diemchuan['Điểm chuẩn']<=diem_cua_ban]
-#     if khoi_chosen!=None:
-#         table_univer = table_univer[table_univer['Tổ hợp môn'].str.contains(khoi_chosen)]
-#     if truong_cua_ban!=None:
-#         table_univer = table_univer[table_univer['Tên trường'].str.lower().str.contains(truong_cua_ban.lower())]
-#     table_univer = table_univer.sort_values('Điểm chuẩn',ascending=False)
-
-#     #Table lower or equal than avg score 3
-#     if khoi_chosen in Khoi_dict.keys():
-#         table_univer_avg = df[~df[Khoi_dict[khoi_chosen2]].isnull().any(axis=1)][Khoi_dict[khoi_chosen2]]
-#         table_univer_avg['Diem'] = table_univer_avg.sum(axis=1).round()
-#     else:
-#         table_univer_avg = df[~df[Khoi_dict['A00']].isnull().any(axis=1)][Khoi_dict['A00']]
-#         table_univer_avg['Diem'] = table_univer_avg.sum(axis=1).round()
-#     diem_cua_ban= table_univer_avg['Diem'].mean()
-#     diem_cua_ban_ab=diem_cua_ban+3
-#     diem_cua_ban_bl=diem_cua_ban-3
-#     output_table_univer_avg = diemchuan[(diemchuan['Điểm chuẩn']<=diem_cua_ban_ab)&(diemchuan['Điểm chuẩn']>=diem_cua_ban_bl)]
-#     if truong_cua_ban!=None:
-#         output_table_univer_avg = output_table_univer_avg[output_table_univer_avg['Tên trường'].str.lower().str.contains(truong_cua_ban2.lower())]
-#     output_table_univer_avg = output_table_univer_avg.sort_values('Điểm chuẩn',ascending=False)
-#     return table_univer.to_dict('records'), output_table_univer_avg.to_dict('records')
-# # Run the app
 if __name__ == '__main__': 
     app.run_server(debug=True)
